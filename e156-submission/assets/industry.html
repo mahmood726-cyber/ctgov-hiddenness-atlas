@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Industry is not the only hiddenness problem, but it is still a large one</title>
+  <style>
+    :root{
+      --bg:#f8f5ef;
+      --paper:#fffdfa;
+      --ink:#111;
+      --muted:#5d584f;
+      --line:#ddd4c6;
+      --line-strong:#b7ab99;
+      --accent:#326891;
+      --gold:#8b6914;
+      --sans:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+      --serif:Georgia,"Times New Roman",serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--serif);
+      background:
+        radial-gradient(circle at top left, rgba(50,104,145,.10), transparent 28%),
+        linear-gradient(180deg, #fcfbf7 0%, var(--bg) 100%);
+      color:var(--ink);
+      line-height:1.65;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    a{color:var(--accent);text-decoration:none}
+    .page{max-width:1120px;margin:0 auto;padding:20px 18px 48px}
+    .masthead{
+      display:flex;justify-content:space-between;gap:18px;align-items:end;
+      border-top:1px solid var(--line-strong);border-bottom:3px double var(--line);
+      padding:10px 0 18px;margin-bottom:24px
+    }
+    .brand{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.03em}
+    .brand-meta{max-width:40ch;font:11px/1.6 var(--sans);text-transform:uppercase;letter-spacing:.16em;color:var(--muted);text-align:right}
+    .hero{
+      background:rgba(255,255,255,.92);border:1px solid var(--line);border-top:4px solid var(--ink);
+      padding:32px clamp(18px,4vw,40px);margin-bottom:24px;box-shadow:0 16px 38px rgba(17,17,17,.045)
+    }
+    .eyebrow{font:700 11px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+    h1{font-size:clamp(38px,6vw,68px);line-height:.98;letter-spacing:-.05em;margin:0 0 14px;max-width:13ch}
+    .lede{font-size:clamp(18px,2.2vw,24px);line-height:1.62;color:#474037;max-width:60rem;margin:0}
+    .hero-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+    .hero-rail div{background:rgba(255,255,255,.7);border-top:1px solid var(--line-strong);padding:12px 14px;font:11px var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.95fr);gap:24px}
+    .card{background:rgba(255,255,255,.93);border:1px solid var(--line);padding:22px 22px 24px;box-shadow:0 14px 28px rgba(17,17,17,.04)}
+    .section-title{font:700 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--line);margin:0 0 16px}
+    .body-copy{font-size:clamp(22px,2.1vw,30px);line-height:1.78;max-width:30ch;margin:0}
+    .body-copy::first-letter{float:left;font-size:72px;line-height:.85;padding-right:10px;padding-top:8px;font-weight:700;color:var(--gold)}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0 24px}
+    .metric{background:#fff;border:1px solid var(--line);border-top:3px solid var(--gold);padding:16px;border-radius:8px}
+    .metric-label{font:700 10px var(--sans);letter-spacing:.15em;text-transform:uppercase;color:#777;margin-bottom:8px}
+    .metric-value{font-size:30px;font-weight:700;line-height:1.05}
+    .metric-note{font:12px var(--sans);color:#888;margin-top:6px}
+    .note-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font:13px var(--sans);color:#444}
+    .note-grid dt{font-weight:700;color:#222}
+    .bullet-list{display:grid;gap:10px;padding-left:18px}
+    .links{display:grid;gap:12px}
+    .link-card{display:block;padding:15px 16px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);font:600 15px var(--sans);color:#1b1b1b;border-radius:8px}
+    .chart-wrap{margin:18px 0 26px}
+    .chart-caption{font:12px var(--sans);color:#666;margin-top:10px}
+    .kicker{font:700 11px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}
+    .story-block{margin-bottom:26px}
+    .footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font:12px var(--sans);color:#8f887e}
+    .footer a{color:var(--accent)}
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .hero-rail{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .brand-meta{text-align:left}
+      .masthead{display:block}
+    }
+    @media (max-width:640px){
+      .page{padding:14px 12px 40px}
+      .hero{padding:24px 18px}
+      .hero-rail{grid-template-columns:1fr}
+      .body-copy{font-size:22px}
+    }
+    </style>
+</head>
+<body>
+  <div class="page">
+    <div class="masthead">
+      <div class="brand">CT.gov Hiddenness Atlas</div>
+      <div class="brand-meta">2026-03-29 | full-registry audit | plots, figures, and E156 bundle</div>
+    </div>
+    <section class="hero">
+      <div class="eyebrow">Industry Story</div>
+      <h1>Industry is not the only hiddenness problem, but it is still a large one</h1>
+      <p class="lede">Industry contributes tens of thousands of long-past missing-results records and remains sparse on several explanatory fields.</p>
+      <div class="hero-rail"><div>Largest sponsors</div><div>Absolute counts</div><div>Rate leaders</div><div>Field sparsity</div></div>
+    </section>
+    <div class="grid">
+      <main><article class='card'><h2 class='section-title'>Industry Story</h2><div class='metrics'><div class='metric'><div class='metric-label'>Industry studies</div><div class='metric-value'>128,464</div><div class='metric-note'>All sponsor-class records</div></div><div class='metric'><div class='metric-label'>Closed interventional</div><div class='metric-value'>87,296</div><div class='metric-note'>Industry only</div></div><div class='metric'><div class='metric-label'>2-year stock</div><div class='metric-value'>44,007</div><div class='metric-note'>Missing posted results</div></div><div class='metric'><div class='metric-label'>Eligible rate</div><div class='metric-value'>58.1%</div><div class='metric-note'>Older closed studies</div></div></div><div class='chart-wrap'><svg viewBox='0 0 760 476' style='width:100%;height:auto'><rect x='0' y='0' width='760' height='476' fill='#fffdfa' rx='10'/><text x='380.0' y='20' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-size='11' fill='#6a645b' letter-spacing='0.12em'>INDUSTRY BY STOCK</text><text x='380.0' y='38' text-anchor='middle' font-family='Georgia,serif' font-size='14' fill='#333'>Largest industry sponsors by absolute 2-year no-results count</text><text x='200' y='76' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>GlaxoSmithKline</text><rect x='210' y='64' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='64' width='440.0' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='77' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>1,246</text><text x='200' y='116' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>AstraZeneca</text><rect x='210' y='104' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='104' width='305.1' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='117' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>864</text><text x='200' y='156' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Boehringer Ingelheim</text><rect x='210' y='144' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='144' width='302.3' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='157' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>856</text><text x='200' y='196' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Sanofi</text><rect x='210' y='184' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='184' width='300.9' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='197' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>852</text><text x='200' y='236' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Pfizer</text><rect x='210' y='224' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='224' width='295.6' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='237' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>837</text><text x='200' y='276' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Novartis Pharmaceuticals</text><rect x='210' y='264' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='264' width='267.3' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='277' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>757</text><text x='200' y='316' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Bayer</text><rect x='210' y='304' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='304' width='239.8' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='317' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>679</text><text x='200' y='356' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Hoffmann-La Roche</text><rect x='210' y='344' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='344' width='206.9' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='357' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>586</text><text x='200' y='396' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Novo Nordisk A/S</text><rect x='210' y='384' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='384' width='204.5' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='397' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>579</text><text x='200' y='436' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Bristol-Myers Squibb</text><rect x='210' y='424' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='424' width='203.0' height='18' fill='#c3452f' rx='5' opacity='0.88'/><text x='660' y='437' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>575</text></svg><div class='chart-caption'>The biggest unresolved industry blocks sit with large multinational portfolios such as GlaxoSmithKline, AstraZeneca, Boehringer Ingelheim, Sanofi, and Pfizer.</div></div><div class='chart-wrap'><svg viewBox='0 0 760 476' style='width:100%;height:auto'><rect x='0' y='0' width='760' height='476' fill='#fffdfa' rx='10'/><text x='380.0' y='20' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif' font-size='11' fill='#6a645b' letter-spacing='0.12em'>INDUSTRY BY RATE</text><text x='380.0' y='38' text-anchor='middle' font-family='Georgia,serif' font-size='14' fill='#333'>Highest industry 2-year no-results rates among sponsors with at least 50 eligible older studies</text><text x='200' y='76' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Abbott Nutrition</text><rect x='210' y='64' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='64' width='440.0' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='77' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>100.0%</text><text x='200' y='116' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Ranbaxy Laboratories Limited</text><rect x='210' y='104' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='104' width='440.0' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='117' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>100.0%</text><text x='200' y='156' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Daewoong Pharmaceutical Co. LTD.</text><rect x='210' y='144' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='144' width='440.0' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='157' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>100.0%</text><text x='200' y='196' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>HK inno.N Corporation</text><rect x='210' y='184' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='184' width='440.0' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='197' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>100.0%</text><text x='200' y='236' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Sunshine Lake Pharma Co., Ltd.</text><rect x='210' y='224' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='224' width='440.0' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='237' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>100.0%</text><text x='200' y='276' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Chong Kun Dang Pharmaceutical</text><rect x='210' y='264' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='264' width='437.8' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='277' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>99.5%</text><text x='200' y='316' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Yuhan Corporation</text><rect x='210' y='304' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='304' width='434.3' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='317' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>98.7%</text><text x='200' y='356' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>PepsiCo Global R&amp;D</text><rect x='210' y='344' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='344' width='433.2' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='357' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>98.5%</text><text x='200' y='396' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Chia Tai Tianqing Pharmaceutical Group Co., Ltd.</text><rect x='210' y='384' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='384' width='432.1' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='397' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>98.2%</text><text x='200' y='436' text-anchor='end' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='#333'>Mylan Pharmaceuticals Inc</text><rect x='210' y='424' width='440' height='18' fill='#eee8df' rx='5'/><rect x='210' y='424' width='431.6' height='18' fill='#326891' rx='5' opacity='0.88'/><text x='660' y='437' font-family='Georgia,serif' font-size='14' fill='#1a1a1a'>98.1%</text></svg><div class='chart-caption'>Rate-based leaders are not always the biggest by count, which is why this project reports both views.</div></div></article></main>
+      <aside class="card"><h2 class='section-title'>Industry Readout</h2><ul class='bullet-list'><li>Industry still carries 44,007 two-year no-results studies.</li><li>53.8% of closed interventional industry studies have no detailed description.</li><li>63.2% have no IPD sharing statement.</li><li>66.6% have no linked publication reference.</li></ul></aside>
+    </div>
+    <div class="footer">
+      <a href="https://github.com/mahmood726-cyber/ctgov-hiddenness-atlas">Source on GitHub</a> | <a href="https://mahmood726-cyber.github.io/ctgov-hiddenness-atlas/">Project home</a> | <a href="https://mahmood726-cyber.github.io/ctgov-hiddenness-atlas/e156-submission/assets/dashboard.html">Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

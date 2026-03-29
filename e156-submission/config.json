@@ -1,0 +1,57 @@
+{
+  "title": "CT.gov Hiddenness Atlas: What Sponsors Still Do Not Show",
+  "slug": "ctgov-hiddenness-atlas",
+  "author": "Mahmood Ahmad",
+  "date": "2026-03-29",
+  "path": "C:\\Projects\\ctgov-hiddenness-atlas",
+  "type": "methods",
+  "primary_estimand": "2-year no-results rate among eligible closed interventional studies",
+  "summary": "A full-registry ClinicalTrials.gov audit of non-disclosure, sparse reporting, and sponsor-specific hiddenness patterns.",
+  "body": "Which sponsor groups account for the largest registry-visible non-disclosure burden across ClinicalTrials.gov? We analysed 578,109 registry records downloaded on March 29, 2026, including 441,191 interventional studies and 290,524 closed interventional studies. We derived omission flags for missing results, missing actual completion dates, missing actual enrollment, absent IPD statements, absent publication links, sparse outcomes, and undisclosed stopping reasons, then summarized them by sponsor class, sponsor, and phase. Among closed interventional studies with primary completion at least two years earlier, 72.7 percent still had no posted results, with OTHER_GOV worst on rate at 95.7 percent and OTHER largest on volume at 127,704 studies. Industry still carried 44,007 two-year no-results studies, phase I had the highest non-reporting rate at 76.7 percent, and NIH had the highest average hiddenness score among named sponsor classes. Registry opacity is concentrated differently by class, so rates, volumes, and structural missingness must be read together. These measures capture registry-visible omission rather than legal violation.",
+  "sentences": [
+    {
+      "role": "Question",
+      "text": "Which sponsor groups account for the largest registry-visible non-disclosure burden across ClinicalTrials.gov?"
+    },
+    {
+      "role": "Dataset",
+      "text": "We analysed 578,109 registry records downloaded on March 29, 2026, including 441,191 interventional studies and 290,524 closed interventional studies."
+    },
+    {
+      "role": "Method",
+      "text": "We derived omission flags for missing results, missing actual completion dates, missing actual enrollment, absent IPD statements, absent publication links, sparse outcomes, and undisclosed stopping reasons, then summarized them by sponsor class, sponsor, and phase."
+    },
+    {
+      "role": "Primary result",
+      "text": "Among closed interventional studies with primary completion at least two years earlier, 72.7 percent still had no posted results, with OTHER_GOV worst on rate at 95.7 percent and OTHER largest on volume at 127,704 studies."
+    },
+    {
+      "role": "Robustness",
+      "text": "Industry still carried 44,007 two-year no-results studies, phase I had the highest non-reporting rate at 76.7 percent, and NIH had the highest average hiddenness score among named sponsor classes."
+    },
+    {
+      "role": "Interpretation",
+      "text": "Registry opacity is concentrated differently by class, so rates, volumes, and structural missingness must be read together."
+    },
+    {
+      "role": "Boundary",
+      "text": "These measures capture registry-visible omission rather than legal violation."
+    }
+  ],
+  "notes": {
+    "app": "CT.gov Hiddenness Atlas dashboard",
+    "data": "578,109 ClinicalTrials.gov records",
+    "code": "https://github.com/mahmood726-cyber/ctgov-hiddenness-atlas",
+    "doi": "",
+    "version": "1.0.0",
+    "date": "2026-03-29",
+    "validation": "FULL REGISTRY RUN"
+  },
+  "affiliation": "Tahir Heart Institute",
+  "email": "author@example.com",
+  "references": [
+    "ClinicalTrials.gov API v2. National Library of Medicine. Accessed March 29, 2026.",
+    "Page MJ, McKenzie JE, Bossuyt PM, et al. The PRISMA 2020 statement. BMJ. 2021;372:n71.",
+    "Borenstein M, Hedges LV, Higgins JPT, Rothstein HR. Introduction to Meta-Analysis. 2nd ed. Wiley; 2021."
+  ]
+}

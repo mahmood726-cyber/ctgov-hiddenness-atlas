@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CT.gov Hiddenness Atlas</title>
+  <style>
+    :root{
+      --bg:#f8f5ef;
+      --paper:#fffdfa;
+      --ink:#111;
+      --muted:#5d584f;
+      --line:#ddd4c6;
+      --line-strong:#b7ab99;
+      --accent:#326891;
+      --gold:#8b6914;
+      --sans:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+      --serif:Georgia,"Times New Roman",serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--serif);
+      background:
+        radial-gradient(circle at top left, rgba(50,104,145,.10), transparent 28%),
+        linear-gradient(180deg, #fcfbf7 0%, var(--bg) 100%);
+      color:var(--ink);
+      line-height:1.65;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    a{color:var(--accent);text-decoration:none}
+    .page{max-width:1120px;margin:0 auto;padding:20px 18px 48px}
+    .masthead{
+      display:flex;justify-content:space-between;gap:18px;align-items:end;
+      border-top:1px solid var(--line-strong);border-bottom:3px double var(--line);
+      padding:10px 0 18px;margin-bottom:24px
+    }
+    .brand{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.03em}
+    .brand-meta{max-width:40ch;font:11px/1.6 var(--sans);text-transform:uppercase;letter-spacing:.16em;color:var(--muted);text-align:right}
+    .hero{
+      background:rgba(255,255,255,.92);border:1px solid var(--line);border-top:4px solid var(--ink);
+      padding:32px clamp(18px,4vw,40px);margin-bottom:24px;box-shadow:0 16px 38px rgba(17,17,17,.045)
+    }
+    .eyebrow{font:700 11px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+    h1{font-size:clamp(38px,6vw,68px);line-height:.98;letter-spacing:-.05em;margin:0 0 14px;max-width:13ch}
+    .lede{font-size:clamp(18px,2.2vw,24px);line-height:1.62;color:#474037;max-width:60rem;margin:0}
+    .hero-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+    .hero-rail div{background:rgba(255,255,255,.7);border-top:1px solid var(--line-strong);padding:12px 14px;font:11px var(--sans);text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.95fr);gap:24px}
+    .card{background:rgba(255,255,255,.93);border:1px solid var(--line);padding:22px 22px 24px;box-shadow:0 14px 28px rgba(17,17,17,.04)}
+    .section-title{font:700 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--line);margin:0 0 16px}
+    .body-copy{font-size:clamp(22px,2.1vw,30px);line-height:1.78;max-width:30ch;margin:0}
+    .body-copy::first-letter{float:left;font-size:72px;line-height:.85;padding-right:10px;padding-top:8px;font-weight:700;color:var(--gold)}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0 24px}
+    .metric{background:#fff;border:1px solid var(--line);border-top:3px solid var(--gold);padding:16px;border-radius:8px}
+    .metric-label{font:700 10px var(--sans);letter-spacing:.15em;text-transform:uppercase;color:#777;margin-bottom:8px}
+    .metric-value{font-size:30px;font-weight:700;line-height:1.05}
+    .metric-note{font:12px var(--sans);color:#888;margin-top:6px}
+    .note-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font:13px var(--sans);color:#444}
+    .note-grid dt{font-weight:700;color:#222}
+    .bullet-list{display:grid;gap:10px;padding-left:18px}
+    .links{display:grid;gap:12px}
+    .link-card{display:block;padding:15px 16px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);font:600 15px var(--sans);color:#1b1b1b;border-radius:8px}
+    .chart-wrap{margin:18px 0 26px}
+    .chart-caption{font:12px var(--sans);color:#666;margin-top:10px}
+    .kicker{font:700 11px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}
+    .story-block{margin-bottom:26px}
+    .footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font:12px var(--sans);color:#8f887e}
+    .footer a{color:var(--accent)}
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .hero-rail{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .brand-meta{text-align:left}
+      .masthead{display:block}
+    }
+    @media (max-width:640px){
+      .page{padding:14px 12px 40px}
+      .hero{padding:24px 18px}
+      .hero-rail{grid-template-columns:1fr}
+      .body-copy{font-size:22px}
+    }
+    </style>
+</head>
+<body>
+  <div class="page">
+    <div class="masthead">
+      <div class="brand">CT.gov Hiddenness Atlas</div>
+      <div class="brand-meta">2026-03-29 | full-registry audit | plots, figures, and E156 bundle</div>
+    </div>
+    <section class="hero">
+      <div class="eyebrow">E156 Micro-Paper</div>
+      <h1>CT.gov Hiddenness Atlas</h1>
+      <p class="lede">A 156-word account of where sponsor-specific opacity, missing results, and structural sparsity concentrate across the live ClinicalTrials.gov registry.</p>
+      <div class="hero-rail"><div>578,109 total studies</div><div>249,507 eligible older studies</div><div>72.7% 2-year no-results</div><div>Paper + dashboard + protocol</div></div>
+    </section>
+    <div class="grid">
+      <main><article class='card'><h2 class='section-title'>Paper</h2><p class='body-copy'>Which sponsor groups account for the largest registry-visible non-disclosure burden across ClinicalTrials.gov? We analysed 578,109 registry records downloaded on March 29, 2026, including 441,191 interventional studies and 290,524 closed interventional studies. We derived omission flags for missing results, missing actual completion dates, missing actual enrollment, absent IPD statements, absent publication links, sparse outcomes, and undisclosed stopping reasons, then summarized them by sponsor class, sponsor, and phase. Among closed interventional studies with primary completion at least two years earlier, 72.7 percent still had no posted results, with OTHER_GOV worst on rate at 95.7 percent and OTHER largest on volume at 127,704 studies. Industry still carried 44,007 two-year no-results studies, phase I had the highest non-reporting rate at 76.7 percent, and NIH had the highest average hiddenness score among named sponsor classes. Registry opacity is concentrated differently by class, so rates, volumes, and structural missingness must be read together. These measures capture registry-visible omission rather than legal violation.</p><div class='metrics'><div class='metric'><div class='metric-label'>Total studies</div><div class='metric-value'>578,109</div><div class='metric-note'>Live registry</div></div><div class='metric'><div class='metric-label'>Interventional</div><div class='metric-value'>441,191</div><div class='metric-note'>Study type</div></div><div class='metric'><div class='metric-label'>OTHER stock</div><div class='metric-value'>127,704</div><div class='metric-note'>2-year no-results</div></div><div class='metric'><div class='metric-label'>Industry stock</div><div class='metric-value'>44,007</div><div class='metric-note'>2-year no-results</div></div></div><div class='story-block'><div class='kicker'>Sentence Structure</div><p><strong>Question:</strong> Which sponsor groups account for the largest registry-visible non-disclosure burden across ClinicalTrials.gov?</p><p><strong>Dataset:</strong> We analysed 578,109 registry records downloaded on March 29, 2026, including 441,191 interventional studies and 290,524 closed interventional studies.</p><p><strong>Method:</strong> We derived omission flags for missing results, missing actual completion dates, missing actual enrollment, absent IPD statements, absent publication links, sparse outcomes, and undisclosed stopping reasons, then summarized them by sponsor class, sponsor, and phase.</p><p><strong>Primary result:</strong> Among closed interventional studies with primary completion at least two years earlier, 72.7 percent still had no posted results, with OTHER_GOV worst on rate at 95.7 percent and OTHER largest on volume at 127,704 studies.</p><p><strong>Robustness:</strong> Industry still carried 44,007 two-year no-results studies, phase I had the highest non-reporting rate at 76.7 percent, and NIH had the highest average hiddenness score among named sponsor classes.</p><p><strong>Interpretation:</strong> Registry opacity is concentrated differently by class, so rates, volumes, and structural missingness must be read together.</p><p><strong>Boundary:</strong> These measures capture registry-visible omission rather than legal violation.</p></div></article></main>
+      <aside class="card"><h2 class='section-title'>Outside Notes</h2><dl class='note-grid'><dt>Type</dt><dd>methods</dd><dt>App</dt><dd>CT.gov Hiddenness Atlas dashboard</dd><dt>Data</dt><dd>578,109 ClinicalTrials.gov records</dd><dt>Code</dt><dd><a href='https://github.com/mahmood726-cyber/ctgov-hiddenness-atlas'>https://github.com/mahmood726-cyber/ctgov-hiddenness-atlas</a></dd><dt>Version</dt><dd>1.0.0</dd></dl><h2 class='section-title'>Links</h2><div class='links'><a class='link-card' href='assets/dashboard.html'>Main dashboard</a><a class='link-card' href='assets/industry.html'>Industry story</a><a class='link-card' href='paper.md'>Paper markdown</a><a class='link-card' href='protocol.md'>Protocol markdown</a></div></aside>
+    </div>
+    <div class="footer">
+      <a href="https://github.com/mahmood726-cyber/ctgov-hiddenness-atlas">Source on GitHub</a> | <a href="https://mahmood726-cyber.github.io/ctgov-hiddenness-atlas/">Project home</a> | <a href="https://mahmood726-cyber.github.io/ctgov-hiddenness-atlas/e156-submission/assets/dashboard.html">Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>
