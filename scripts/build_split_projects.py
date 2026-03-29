@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+from urllib.parse import quote
 from pathlib import Path
 
 import pandas as pd
@@ -54,6 +55,21 @@ def series_css() -> str:
     }
     .hero-link.primary{background:var(--ink);border-color:var(--ink);color:#fff}
     .chapter-intro{font:15px/1.8 var(--sans);color:#4f4a42;max-width:70ch;margin:0 0 18px}
+    .pull-quote{
+      margin:18px 0 22px;padding:18px 20px;background:linear-gradient(180deg,#fcfaf5 0%,#f4eee3 100%);
+      border-top:3px solid var(--ink);border-bottom:1px solid var(--line);box-shadow:0 12px 24px rgba(17,17,17,.03)
+    }
+    .pull-quote-text{
+      font-size:clamp(24px,3vw,36px);line-height:1.28;letter-spacing:-.03em;margin:0;color:#1a1814
+    }
+    .pull-quote-meta{
+      margin-top:10px;font:700 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)
+    }
+    .section-break{
+      display:flex;align-items:center;gap:12px;margin:24px 0 18px;color:#6a645b;
+      font:700 10px var(--sans);letter-spacing:.18em;text-transform:uppercase
+    }
+    .section-break::before,.section-break::after{content:"";height:1px;background:var(--line-strong);flex:1}
     .annotation{
       margin-top:12px;padding:12px 14px;background:#faf6ee;border-left:4px solid var(--gold);
       font:13px/1.7 var(--sans);color:#4b463e
@@ -75,6 +91,16 @@ def series_css() -> str:
       .hero-links{display:grid;grid-template-columns:1fr}
     }
     """
+
+
+def favicon_href() -> str:
+    svg = (
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>"
+        "<rect width='64' height='64' rx='10' fill='#111111'/>"
+        "<text x='32' y='39' text-anchor='middle' font-family='Georgia' font-size='28' fill='#f4eee3'>CT</text>"
+        "</svg>"
+    )
+    return "data:image/svg+xml," + quote(svg)
 
 
 def render_project_page(
@@ -105,6 +131,7 @@ def render_project_page(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{safe(title)}</title>
+  <link rel="icon" href="{favicon_href()}">
   <style>{common_css()}{series_css()}</style>
 </head>
 <body>
@@ -131,7 +158,7 @@ def render_project_page(
     <div class="footer">
       <a href="{safe(spec["repo_url"])}">Source on GitHub</a> |
       <a href="{safe(spec["pages_url"])}">Project home</a> |
-      <a href="{safe(spec["pages_url"])}e156-submission/assets/dashboard.html">Dashboard</a>
+      <a href="{safe(spec["pages_url"])}dashboard.html">Dashboard</a>
     </div>
   </div>
 </body>
@@ -172,6 +199,19 @@ def series_cards(spec: dict[str, object]) -> str:
             + "</a>"
         )
     return "<div class='series-grid'>" + "".join(cards) + "</div>"
+
+
+def pull_quote_box(text: str, source: str) -> str:
+    return (
+        "<div class='pull-quote'>"
+        f"<p class='pull-quote-text'>{safe(text)}</p>"
+        f"<div class='pull-quote-meta'>{safe(source)}</div>"
+        "</div>"
+    )
+
+
+def section_break(label: str) -> str:
+    return f"<div class='section-break'>{safe(label)}</div>"
 
 
 def make_config(spec: dict[str, object], repo_path: Path) -> dict[str, object]:
@@ -335,10 +375,12 @@ def write_project(spec: dict[str, object]) -> Path:
         "<h2 class='section-title'>Project</h2>"
         f"<p class='chapter-intro'>{safe(spec['chapter_intro'])}</p>"
         + quick_jump
+        + pull_quote_box(spec["root_pull_quote"], spec["root_pull_source"])
         + f"<p class='body-copy'>{safe(spec['summary'])}</p>"
         + metric_cards(spec["landing_metrics"])
         + spec["landing_chart_html"]
         + "</section>"
+        + section_break("Read Across Projects")
         + "<section class='card'><h2 class='section-title'>Across The Series</h2>"
         + "<p class='chapter-intro'>The split projects are meant to be read together: one for industry, one for sponsor classes, one for phases, and one for structural missingness.</p>"
         + series_cards(spec)
@@ -360,6 +402,7 @@ def write_project(spec: dict[str, object]) -> Path:
     reader_main = (
         "<article class='card'><h2 class='section-title'>Paper</h2>"
         + quick_jump
+        + pull_quote_box(spec["paper_pull_quote"], spec["paper_pull_source"])
         + f"<p class='body-copy'>{safe(config['body'])}</p>"
         + metric_cards(spec["reader_metrics"])
         + "</article>"
@@ -379,9 +422,11 @@ def write_project(spec: dict[str, object]) -> Path:
     dashboard_main = (
         "<article class='card'><h2 class='section-title'>Dashboard</h2>"
         + quick_jump
+        + pull_quote_box(spec["dashboard_pull_quote"], spec["dashboard_pull_source"])
         + metric_cards(spec["dashboard_metrics"])
         + "".join(spec["dashboard_sections"])
         + "</article>"
+        + section_break("Read Across Projects")
         + "<section class='card'><h2 class='section-title'>Across The Series</h2>"
         + "<p class='chapter-intro'>Each project isolates a different dimension of registry opacity, but the point is the contrast between them, not a single leaderboard.</p>"
         + series_cards(spec)
@@ -686,6 +731,12 @@ def main() -> None:
             "root_eyebrow": "Industry Project",
             "root_lede": "A standalone public project focused on the size, shape, and leading sponsors of the industry disclosure backlog.",
             "chapter_intro": "This page is designed as the visible front door on GitHub Pages: the dashboard, paper, protocol, and the rest of the CT.gov series are all one click from here.",
+            "root_pull_quote": "Forty-four thousand long-past missing-results records remain inside the industry bucket alone.",
+            "root_pull_source": "Industry stock, March 29, 2026 registry snapshot",
+            "paper_pull_quote": "The industry problem is not just about rates. It is also about a very large unresolved stock.",
+            "paper_pull_source": "Reading note",
+            "dashboard_pull_quote": "Large sponsors dominate the raw backlog, but smaller firms can still look worse when the denominator changes to eligible older studies.",
+            "dashboard_pull_source": "How to read the dashboard",
             "root_rail": ["Industry only", "44,007 hidden results", "58.1% eligible rate", "Top sponsors"],
             "landing_metrics": [
                 ("Industry studies", fmt_int(as_int(sponsor_all["INDUSTRY"]["studies"])), "All industry-linked records"),
@@ -705,6 +756,7 @@ def main() -> None:
                     percent=False,
                 ),
                 "The largest unresolved industry blocks sit with GlaxoSmithKline, AstraZeneca, Boehringer Ingelheim, Sanofi, and Pfizer.",
+                "Why this figure matters: the count view shows where the biggest visible backlog sits, which is a different question from which sponsor has the very worst percentage.",
             ),
             "reader_lede": "A 156-word micro-paper on how much of the public CT.gov silence still sits inside industry-linked records.",
             "reader_rail": ["Industry only", "44,007 stock", "58.1% rate", "Field sparsity"],
@@ -737,6 +789,7 @@ def main() -> None:
                         percent=False,
                     ),
                     "The biggest absolute backlogs sit with large multinational portfolios rather than obscure sponsors.",
+                    "Read this as stock, not blame: a bigger bar here mostly means a larger unresolved public backlog, not necessarily a higher percentage failure rate.",
                 ),
                 chart_section(
                     "Rate leaders",
@@ -750,6 +803,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "Rate-based leaders are not always the same firms that dominate the raw count of unresolved studies.",
+                    "This panel flips the lens from scale to intensity, which is why small and midsize sponsors move up when percentage rather than stock is emphasized.",
                 ),
                 chart_section(
                     "Field sparsity",
@@ -768,6 +822,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "The disclosure gap is not limited to results posting; explanatory fields are often sparse as well.",
+                    "Missing descriptions, publication links, and IPD statements reduce interpretability even when a record is not counted in the formal no-results backlog.",
                 ),
             ],
             "sidebar_bullets": [
@@ -796,6 +851,12 @@ def main() -> None:
             "root_eyebrow": "Sponsor-Class Project",
             "root_lede": "A standalone public comparison of sponsor classes that separates rate-based failure from absolute disclosure burden.",
             "chapter_intro": "The key distinction on this page is between systematic opacity and absolute hidden stock, because the class with the worst rate is not the class with the biggest backlog.",
+            "root_pull_quote": "OTHER_GOV is worst on rate. OTHER is worst on stock. Industry is still too large to ignore.",
+            "root_pull_source": "Class comparison",
+            "paper_pull_quote": "A single leaderboard hides the core pattern: different sponsor classes look worst depending on whether you care about rate, stock, or structural sparsity.",
+            "paper_pull_source": "Reading note",
+            "dashboard_pull_quote": "The sponsor-class story only becomes legible when rate and stock are plotted separately.",
+            "dashboard_pull_source": "How to read the dashboard",
             "root_rail": ["Sponsor classes", "95.7% worst rate", "127,704 largest stock", "NIH highest named-class score"],
             "landing_metrics": [
                 ("Worst rate", fmt_pct(as_float(sponsor_closed["OTHER_GOV"]["results_gap_2y_rate_eligible"])), "OTHER_GOV"),
@@ -815,6 +876,7 @@ def main() -> None:
                     percent=False,
                 ),
                 "OTHER dominates by unresolved stock, but OTHER_GOV is worse on the eligible rate metric.",
+                "This is why the project is split: the biggest class by stock is not the same class that looks worst when evaluated as a rate among eligible older studies.",
             ),
             "reader_lede": "A 156-word sponsor-class comparison that separates systematic silence from absolute hidden stock.",
             "reader_rail": ["OTHER_GOV rate", "OTHER stock", "Industry burden", "NIH score"],
@@ -847,6 +909,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "Rate identifies systematic opacity. OTHER_GOV is the standout class on this axis.",
+                    "High rate signals a class where non-reporting looks systematic rather than merely a consequence of very large scale.",
                 ),
                 chart_section(
                     "Stock",
@@ -860,6 +923,7 @@ def main() -> None:
                         percent=False,
                     ),
                     "Absolute stock identifies where the largest unseen block sits, and that block belongs to OTHER.",
+                    "Volume matters because unresolved stock determines how much public evidence is still effectively missing from the registry surface.",
                 ),
             ],
             "sidebar_bullets": [
@@ -888,6 +952,12 @@ def main() -> None:
             "root_eyebrow": "Phase Project",
             "root_lede": "A standalone public project on how much registry silence concentrates in phase I, early phase I, the NA bucket, and later phases.",
             "chapter_intro": "This landing page is meant to make the phase story visible immediately on GitHub Pages, with the main dashboard surfaced at the top and the rest of the series linked nearby.",
+            "root_pull_quote": "Phase I is the quietest major phase on rate, but the NA bucket is where the largest unresolved stock accumulates.",
+            "root_pull_source": "Phase comparison",
+            "paper_pull_quote": "Phase structure changes the story. Early development and the NA bucket behave differently from later phases.",
+            "paper_pull_source": "Reading note",
+            "dashboard_pull_quote": "The phase gradient shows that silence is not only sponsor-specific. It also varies along the development pathway itself.",
+            "dashboard_pull_source": "How to read the dashboard",
             "root_rail": ["Phase I 76.7%", "NA 96,605 stock", "Phase III 45.5%", "Phase IV 52.4%"],
             "landing_metrics": [
                 ("Interventional", fmt_int(summary["interventional_studies"]), "All phase-labelled studies"),
@@ -907,6 +977,7 @@ def main() -> None:
                     percent=True,
                 ),
                 "Phase I is worst on rate, while the large NA bucket remains close behind and dominates by scale.",
+                "This first chart should be read alongside the stock chart below, because phase I and the NA bucket answer different versions of the same transparency question.",
             ),
             "reader_lede": "A 156-word phase-based account of where CT.gov reporting silence is most concentrated across the development pathway.",
             "reader_rail": ["Phase I", "NA bucket", "Phase III", "Phase IV"],
@@ -939,6 +1010,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "Phase I is the quietest major phase on a rate basis, with early phase I and NA also notably opaque.",
+                    "Rates show where missing results look routine within a phase rather than where the biggest raw backlog happens to sit.",
                 ),
                 chart_section(
                     "Stock",
@@ -952,6 +1024,7 @@ def main() -> None:
                         percent=False,
                     ),
                     "The NA bucket overwhelms all later phases on raw unresolved stock because of its size.",
+                    "The NA category matters because sheer volume can turn a middling or even moderate rate into the single largest public stock of unresolved studies.",
                 ),
             ],
             "sidebar_bullets": [
@@ -980,6 +1053,12 @@ def main() -> None:
             "root_eyebrow": "Structural Project",
             "root_lede": "A standalone public project on missing publication links, IPD statements, detailed descriptions, locations, and other structural fields.",
             "chapter_intro": "This project shifts the focus from missing results to missing descriptive context, and the GitHub Pages root now exposes that structure directly instead of burying it in a subfolder.",
+            "root_pull_quote": "Results reporting is only one layer of hiddenness. Publication links and IPD statements disappear at scale too.",
+            "root_pull_source": "Structural missingness",
+            "paper_pull_quote": "The registry can look complete enough to browse while still lacking the fields needed for interpretation, replication, and scrutiny.",
+            "paper_pull_source": "Reading note",
+            "dashboard_pull_quote": "Structural missingness is quieter than a missing results tab, but it still erodes what the registry can actually tell the public.",
+            "dashboard_pull_source": "How to read the dashboard",
             "root_rail": ["63.4% no publication link", "48.3% no IPD statement", "32.7% no description", "10.2% no locations"],
             "landing_metrics": [
                 ("Registry size", fmt_int(summary["total_studies"]), "All studies"),
@@ -999,6 +1078,7 @@ def main() -> None:
                     percent=True,
                 ),
                 "Publication links and IPD statements disappear far more often than primary outcomes or location fields.",
+                "The chart is a reminder that transparency breaks down before formal results reporting is even considered.",
             ),
             "reader_lede": "A 156-word micro-paper on what disappears from the registry before results reporting is even considered.",
             "reader_rail": ["Publication links", "IPD statements", "Descriptions", "Locations"],
@@ -1031,6 +1111,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "The largest structural gaps are publication links and IPD statements rather than outcomes or titles.",
+                    "This is the broadest view in the series: it captures information loss across the entire registry, not just among older completed trials.",
                 ),
                 chart_section(
                     "IPD by class",
@@ -1044,6 +1125,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "NIH is the highest named sponsor class on IPD statement missingness, with industry also heavily affected.",
+                    "Sponsor-class comparisons help show that structural loss is patterned rather than random noise across all records.",
                 ),
                 chart_section(
                     "Publications by class",
@@ -1057,6 +1139,7 @@ def main() -> None:
                         percent=True,
                     ),
                     "Industry leads the major named classes on publication-link missingness, while NIH is much lower on this field.",
+                    "Publication-link missingness affects whether readers can move from a registry record to a paper trail, which is why this field matters so much for public scrutiny.",
                 ),
             ],
             "sidebar_bullets": [
