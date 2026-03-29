@@ -31,6 +31,52 @@ PROJECTS_ROOT = Path("C:/Projects")
 DATE = "2026-03-29"
 
 
+def series_css() -> str:
+    return """
+    .series-bar{
+      display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+      padding:12px 14px;margin:0 0 18px;background:rgba(255,255,255,.88);
+      border:1px solid var(--line);box-shadow:0 10px 24px rgba(17,17,17,.03)
+    }
+    .series-label{
+      font:700 10px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)
+    }
+    .series-nav{display:flex;gap:10px;flex-wrap:wrap}
+    .series-chip{
+      display:inline-block;padding:9px 12px;border:1px solid var(--line);
+      background:#fff;font:700 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:#222;border-radius:999px
+    }
+    .series-chip.current{border-color:var(--ink);background:#f3ede2}
+    .hero-links{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0 8px}
+    .hero-link{
+      display:inline-block;padding:12px 16px;background:#fff;border:1px solid var(--line);
+      font:700 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:#222;border-radius:999px
+    }
+    .hero-link.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+    .chapter-intro{font:15px/1.8 var(--sans);color:#4f4a42;max-width:70ch;margin:0 0 18px}
+    .annotation{
+      margin-top:12px;padding:12px 14px;background:#faf6ee;border-left:4px solid var(--gold);
+      font:13px/1.7 var(--sans);color:#4b463e
+    }
+    .series-grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:18px
+    }
+    .series-card{
+      display:block;padding:16px;background:#fff;border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:8px
+    }
+    .series-card-kicker{
+      font:700 10px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px
+    }
+    .series-card-title{font-size:20px;line-height:1.15;color:#1b1b1b;margin:0 0 8px}
+    .series-card-copy{font:13px/1.7 var(--sans);color:#5a544a;margin:0}
+    .quick-jump{display:grid;gap:10px;margin:14px 0 18px}
+    @media (max-width:640px){
+      .series-bar{padding:10px 12px}
+      .hero-links{display:grid;grid-template-columns:1fr}
+    }
+    """
+
+
 def render_project_page(
     spec: dict[str, object],
     title: str,
@@ -41,13 +87,25 @@ def render_project_page(
     sidebar: str,
 ) -> str:
     rail_html = "".join(f"<div>{safe(item)}</div>" for item in rail)
+    top_nav = "".join(
+        f"<a class='series-chip{' current' if item['repo_name'] == spec['repo_name'] else ''}' href='{safe(item['pages_url'])}'>{safe(item['short_title'])}</a>"
+        for item in spec["series_links"]
+    )
+    hero_links = (
+        "<div class='hero-links'>"
+        f"<a class='hero-link primary' href='{safe(spec['pages_url'])}dashboard.html'>Open dashboard</a>"
+        f"<a class='hero-link' href='{safe(spec['pages_url'])}e156-submission/index.html'>Read E156 paper</a>"
+        f"<a class='hero-link' href='{safe(spec['pages_url'])}e156-submission/protocol.md'>Protocol</a>"
+        f"<a class='hero-link' href='{safe(spec['series_hub_url'])}'>Series hub</a>"
+        "</div>"
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{safe(title)}</title>
-  <style>{common_css()}</style>
+  <style>{common_css()}{series_css()}</style>
 </head>
 <body>
   <div class="page">
@@ -55,10 +113,15 @@ def render_project_page(
       <div class="brand">{safe(spec["title"])}</div>
       <div class="brand-meta">{safe(DATE)} | full-registry ct.gov audit | plots, figures, and e156 bundle</div>
     </div>
+    <div class="series-bar">
+      <div class="series-label">Series</div>
+      <div class="series-nav">{top_nav}</div>
+    </div>
     <section class="hero">
       <div class="eyebrow">{safe(eyebrow)}</div>
       <h1>{safe(title)}</h1>
       <p class="lede">{safe(lede)}</p>
+      {hero_links}
       <div class="hero-rail">{rail_html}</div>
     </section>
     <div class="grid">
@@ -76,12 +139,14 @@ def render_project_page(
 """
 
 
-def chart_section(kicker: str, chart_html: str, caption: str) -> str:
+def chart_section(kicker: str, chart_html: str, caption: str, annotation: str = "") -> str:
+    note_html = f"<div class='annotation'>{safe(annotation)}</div>" if annotation else ""
     return (
         "<div class='chart-wrap'>"
         f"<div class='kicker'>{safe(kicker)}</div>"
         + chart_html
         + f"<div class='chart-caption'>{safe(caption)}</div>"
+        + note_html
         + "</div>"
     )
 
@@ -90,6 +155,23 @@ def sentence_bundle(pairs: list[tuple[str, str]]) -> tuple[str, list[dict[str, s
     sentences = [{"role": role, "text": text} for role, text in pairs]
     body = " ".join(text for _, text in pairs)
     return body, sentences
+
+
+def series_cards(spec: dict[str, object]) -> str:
+    cards = []
+    for item in spec["series_links"]:
+        if item["repo_name"] == spec["repo_name"]:
+            continue
+        cards.append(
+            "<a class='series-card' href='"
+            + safe(item["pages_url"])
+            + "'>"
+            + f"<div class='series-card-kicker'>{safe(item['short_title'])}</div>"
+            + f"<div class='series-card-title'>{safe(item['title'])}</div>"
+            + f"<p class='series-card-copy'>{safe(item['summary'])}</p>"
+            + "</a>"
+        )
+    return "<div class='series-grid'>" + "".join(cards) + "</div>"
 
 
 def make_config(spec: dict[str, object], repo_path: Path) -> dict[str, object]:
@@ -196,6 +278,7 @@ def test_repository_smoke():
         assert (submission / name).exists(), name
 
     assert (assets / 'dashboard.html').exists()
+    assert (root / 'dashboard.html').exists()
 
     config = json.loads((submission / 'config.json').read_text(encoding='utf-8'))
     assert len(config.get('body', '').split()) == 156
@@ -231,20 +314,34 @@ def write_project(spec: dict[str, object]) -> Path:
     tests.mkdir(parents=True, exist_ok=True)
 
     config = make_config(spec, repo_path)
+    quick_jump = (
+        "<div class='quick-jump'>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}dashboard.html'>Open dashboard at root</a>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}e156-submission/index.html'>Read E156 micro-paper</a>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}e156-submission/protocol.md'>Open protocol</a>"
+        f"<a class='link-card' href='{safe(spec['series_hub_url'])}'>Open series hub</a>"
+        "</div>"
+    )
     links = (
         "<div class='links'>"
-        "<a class='link-card' href='e156-submission/index.html'>E156 micro-paper</a>"
-        "<a class='link-card' href='e156-submission/assets/dashboard.html'>Dashboard</a>"
-        "<a class='link-card' href='e156-submission/paper.md'>Paper</a>"
-        "<a class='link-card' href='e156-submission/protocol.md'>Protocol</a>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}dashboard.html'>Dashboard</a>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}e156-submission/index.html'>E156 micro-paper</a>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}e156-submission/paper.md'>Paper</a>"
+        f"<a class='link-card' href='{safe(spec['pages_url'])}e156-submission/protocol.md'>Protocol</a>"
         "</div>"
     )
     root_main = (
         "<section class='card'>"
         "<h2 class='section-title'>Project</h2>"
-        f"<p class='body-copy'>{safe(spec['summary'])}</p>"
+        f"<p class='chapter-intro'>{safe(spec['chapter_intro'])}</p>"
+        + quick_jump
+        + f"<p class='body-copy'>{safe(spec['summary'])}</p>"
         + metric_cards(spec["landing_metrics"])
         + spec["landing_chart_html"]
+        + "</section>"
+        + "<section class='card'><h2 class='section-title'>Across The Series</h2>"
+        + "<p class='chapter-intro'>The split projects are meant to be read together: one for industry, one for sponsor classes, one for phases, and one for structural missingness.</p>"
+        + series_cards(spec)
         + "</section>"
     )
     root_sidebar = (
@@ -257,10 +354,13 @@ def write_project(spec: dict[str, object]) -> Path:
         f"<dt>Primary estimand</dt><dd>{safe(spec['primary_estimand'])}</dd>"
         "</dl>"
         + links
+        + "<h2 class='section-title'>Series Hub</h2>"
+        + f"<div class='links'><a class='link-card' href='{safe(spec['series_hub_url'])}'>CT.gov project series</a></div>"
     )
     reader_main = (
         "<article class='card'><h2 class='section-title'>Paper</h2>"
-        f"<p class='body-copy'>{safe(config['body'])}</p>"
+        + quick_jump
+        + f"<p class='body-copy'>{safe(config['body'])}</p>"
         + metric_cards(spec["reader_metrics"])
         + "</article>"
     )
@@ -272,17 +372,24 @@ def write_project(spec: dict[str, object]) -> Path:
         f"<dt>Code</dt><dd><a href='{safe(spec['repo_url'])}'>{safe(spec['repo_url'])}</a></dd>"
         f"<dt>Version</dt><dd>{safe(config['notes']['version'])}</dd>"
         "</dl>"
-        "<div class='links'><a class='link-card' href='assets/dashboard.html'>Dashboard</a><a class='link-card' href='paper.md'>Paper markdown</a><a class='link-card' href='protocol.md'>Protocol markdown</a></div>"
+        f"<div class='links'><a class='link-card' href='{safe(spec['pages_url'])}dashboard.html'>Dashboard</a><a class='link-card' href='{safe(spec['pages_url'])}e156-submission/paper.md'>Paper markdown</a><a class='link-card' href='{safe(spec['pages_url'])}e156-submission/protocol.md'>Protocol markdown</a></div>"
+        + "<h2 class='section-title'>Across The Series</h2>"
+        + series_cards(spec)
     )
     dashboard_main = (
         "<article class='card'><h2 class='section-title'>Dashboard</h2>"
+        + quick_jump
         + metric_cards(spec["dashboard_metrics"])
         + "".join(spec["dashboard_sections"])
         + "</article>"
+        + "<section class='card'><h2 class='section-title'>Across The Series</h2>"
+        + "<p class='chapter-intro'>Each project isolates a different dimension of registry opacity, but the point is the contrast between them, not a single leaderboard.</p>"
+        + series_cards(spec)
+        + "</section>"
     )
     dashboard_sidebar = "<h2 class='section-title'>Readout</h2><ul class='bullet-list'>" + "".join(
         f"<li>{safe(item)}</li>" for item in spec["sidebar_bullets"]
-    ) + "</ul>"
+    ) + "</ul>" + f"<div class='links'><a class='link-card' href='{safe(spec['series_hub_url'])}'>Open series hub</a></div>"
 
     (repo_path / ".gitignore").write_text("__pycache__/\n*.pyc\n.pytest_cache/\n", encoding="utf-8")
     (repo_path / ".nojekyll").write_text("", encoding="utf-8")
@@ -317,6 +424,18 @@ def write_project(spec: dict[str, object]) -> Path:
         encoding="utf-8",
     )
     (assets / "dashboard.html").write_text(
+        render_project_page(
+            spec,
+            spec["dashboard_title"],
+            spec["dashboard_eyebrow"],
+            spec["dashboard_lede"],
+            spec["dashboard_rail"],
+            dashboard_main,
+            dashboard_sidebar,
+        ),
+        encoding="utf-8",
+    )
+    (repo_path / "dashboard.html").write_text(
         render_project_page(
             spec,
             spec["dashboard_title"],
@@ -566,6 +685,7 @@ def main() -> None:
             "root_title": "How much of the CT.gov disclosure gap sits inside industry?",
             "root_eyebrow": "Industry Project",
             "root_lede": "A standalone public project focused on the size, shape, and leading sponsors of the industry disclosure backlog.",
+            "chapter_intro": "This page is designed as the visible front door on GitHub Pages: the dashboard, paper, protocol, and the rest of the CT.gov series are all one click from here.",
             "root_rail": ["Industry only", "44,007 hidden results", "58.1% eligible rate", "Top sponsors"],
             "landing_metrics": [
                 ("Industry studies", fmt_int(as_int(sponsor_all["INDUSTRY"]["studies"])), "All industry-linked records"),
@@ -675,6 +795,7 @@ def main() -> None:
             "root_title": "Which sponsor classes are worst on rate, and which are biggest on stock?",
             "root_eyebrow": "Sponsor-Class Project",
             "root_lede": "A standalone public comparison of sponsor classes that separates rate-based failure from absolute disclosure burden.",
+            "chapter_intro": "The key distinction on this page is between systematic opacity and absolute hidden stock, because the class with the worst rate is not the class with the biggest backlog.",
             "root_rail": ["Sponsor classes", "95.7% worst rate", "127,704 largest stock", "NIH highest named-class score"],
             "landing_metrics": [
                 ("Worst rate", fmt_pct(as_float(sponsor_closed["OTHER_GOV"]["results_gap_2y_rate_eligible"])), "OTHER_GOV"),
@@ -766,6 +887,7 @@ def main() -> None:
             "root_title": "Where do trial phases go quiet in CT.gov?",
             "root_eyebrow": "Phase Project",
             "root_lede": "A standalone public project on how much registry silence concentrates in phase I, early phase I, the NA bucket, and later phases.",
+            "chapter_intro": "This landing page is meant to make the phase story visible immediately on GitHub Pages, with the main dashboard surfaced at the top and the rest of the series linked nearby.",
             "root_rail": ["Phase I 76.7%", "NA 96,605 stock", "Phase III 45.5%", "Phase IV 52.4%"],
             "landing_metrics": [
                 ("Interventional", fmt_int(summary["interventional_studies"]), "All phase-labelled studies"),
@@ -857,6 +979,7 @@ def main() -> None:
             "root_title": "What disappears from CT.gov before results are even considered?",
             "root_eyebrow": "Structural Project",
             "root_lede": "A standalone public project on missing publication links, IPD statements, detailed descriptions, locations, and other structural fields.",
+            "chapter_intro": "This project shifts the focus from missing results to missing descriptive context, and the GitHub Pages root now exposes that structure directly instead of burying it in a subfolder.",
             "root_rail": ["63.4% no publication link", "48.3% no IPD statement", "32.7% no description", "10.2% no locations"],
             "landing_metrics": [
                 ("Registry size", fmt_int(summary["total_studies"]), "All studies"),
@@ -945,9 +1068,23 @@ def main() -> None:
         },
     ]
 
+    series_hub_url = f"https://{REPO_OWNER}.github.io/ctgov-hiddenness-atlas/"
+    series_links = [
+        {
+            "repo_name": item["repo_name"],
+            "title": item["title"],
+            "summary": item["summary"],
+            "short_title": item["title"].replace("CT.gov ", "").replace("ClinicalTrials.gov ", ""),
+            "pages_url": f"https://{REPO_OWNER}.github.io/{item['repo_name']}/",
+        }
+        for item in projects
+    ]
+
     for spec in projects:
         spec["repo_url"] = f"https://github.com/{REPO_OWNER}/{spec['repo_name']}"
         spec["pages_url"] = f"https://{REPO_OWNER}.github.io/{spec['repo_name']}/"
+        spec["series_hub_url"] = series_hub_url
+        spec["series_links"] = series_links
         path = write_project(spec)
         print(f"Built {path}")
 
