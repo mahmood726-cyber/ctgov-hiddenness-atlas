@@ -382,7 +382,7 @@ def write_project(spec: dict[str, object]) -> Path:
         + "</section>"
         + section_break("Read Across Projects")
         + "<section class='card'><h2 class='section-title'>Across The Series</h2>"
-        + "<p class='chapter-intro'>The split projects are meant to be read together: one for industry, one for sponsor classes, one for phases, and one for structural missingness.</p>"
+        + "<p class='chapter-intro'>The split projects are meant to be read together because each isolates a different dimension of registry opacity rather than forcing every question into one leaderboard.</p>"
         + series_cards(spec)
         + "</section>"
     )
