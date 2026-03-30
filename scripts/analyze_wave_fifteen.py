@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""Wave-fifteen CT.gov analyses: detailed-description gaps and description-vs-endpoint asymmetry."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+PROCESSED = ROOT / "data" / "processed"
+
+FEATURE_COLUMNS = [
+    "nct_id",
+    "lead_sponsor_name",
+    "lead_sponsor_class",
+    "days_since_primary_completion",
+    "is_interventional",
+    "is_closed",
+    "detailed_description_missing",
+    "primary_outcome_description_missing",
+]
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--features", default=str(PROCESSED / "study_features.parquet"))
+    parser.add_argument("--context", default=str(PROCESSED / "wave_five_study_context.parquet"))
+    parser.add_argument("--conditions", default=str(PROCESSED / "study_condition_family.parquet"))
+    parser.add_argument("--out-dir", default=str(PROCESSED))
+    parser.add_argument("--min-sponsor-studies", type=int, default=100)
+    parser.add_argument("--min-country-studies", type=int, default=500)
+    parser.add_argument("--min-condition-studies", type=int, default=1000)
+    return parser.parse_args()
+
+
+def load_older(features_path: Path, context_path: Path, conditions_path: Path) -> pd.DataFrame:
+    features = pd.read_parquet(features_path, columns=FEATURE_COLUMNS)
+    context = pd.read_parquet(context_path)
+    conditions = pd.read_parquet(conditions_path, columns=["nct_id", "condition_family_label"])
+
+    older = features[
+        features["is_interventional"]
+        & features["is_closed"]
+        & features["days_since_primary_completion"].fillna(-1).ge(730)
+    ].copy()
+    older = older.merge(context, on="nct_id", how="left")
+    older = older.merge(conditions, on="nct_id", how="left")
+    older["country_names_text"] = older["country_names_text"].fillna("")
+    older["condition_family_label"] = older["condition_family_label"].fillna("Other")
+    older["detailed_gap"] = older["detailed_description_missing"]
+    older["description_only"] = older["detailed_description_missing"] & ~older["primary_outcome_description_missing"]
+    older["primary_only"] = ~older["detailed_description_missing"] & older["primary_outcome_description_missing"]
+    older["text_asymmetry"] = older["description_only"].astype(int) - older["primary_only"].astype(int)
+    return older
+
+
+def make_country_long(older: pd.DataFrame) -> pd.DataFrame:
+    country_long = older.copy()
+    country_long["country_name"] = (
+        country_long["country_names_text"]
+        .astype(str)
+        .str.split("|")
+        .map(lambda items: [item.strip() for item in items if item.strip()])
+    )
+    return country_long[country_long["country_name"].map(bool)].explode("country_name").reset_index(drop=True)
+
+
+def summarize(df: pd.DataFrame, group_cols: list[str]) -> pd.DataFrame:
+    grouped = (
+        df.groupby(group_cols, observed=False)
+        .agg(
+            studies=("nct_id", "size"),
+            detailed_gap_count=("detailed_gap", "sum"),
+            detailed_gap_rate=("detailed_gap", "mean"),
+            description_only_count=("description_only", "sum"),
+            description_only_rate=("description_only", "mean"),
+            primary_only_count=("primary_only", "sum"),
+            primary_only_rate=("primary_only", "mean"),
+            text_asymmetry_net=("text_asymmetry", "sum"),
+            text_asymmetry_rate=("text_asymmetry", "mean"),
+        )
+        .reset_index()
+    )
+    rate_cols = [
+        "detailed_gap_rate",
+        "description_only_rate",
+        "primary_only_rate",
+        "text_asymmetry_rate",
+    ]
+    grouped[rate_cols] = grouped[rate_cols].mul(100).round(3)
+    return grouped
+
+
+def write_findings(
+    out_dir: Path,
+    sponsor_detailed: pd.DataFrame,
+    country_detailed: pd.DataFrame,
+    condition_detailed: pd.DataFrame,
+    sponsor_asymmetry: pd.DataFrame,
+    country_asymmetry: pd.DataFrame,
+    class_summary: pd.DataFrame,
+) -> None:
+    sponsor_detailed_rate = sponsor_detailed.sort_values(
+        ["detailed_gap_rate", "detailed_gap_count"], ascending=[False, False]
+    ).iloc[0]
+    country_detailed_rate = country_detailed.sort_values(
+        ["detailed_gap_rate", "detailed_gap_count"], ascending=[False, False]
+    ).iloc[0]
+    condition_detailed_rate = condition_detailed.sort_values(
+        ["detailed_gap_rate", "detailed_gap_count"], ascending=[False, False]
+    ).iloc[0]
+    sponsor_asymmetry_rate = sponsor_asymmetry.sort_values(
+        ["text_asymmetry_rate", "text_asymmetry_net"], ascending=[False, False]
+    ).iloc[0]
+    country_asymmetry_rate = country_asymmetry.sort_values(
+        ["text_asymmetry_rate", "text_asymmetry_net"], ascending=[False, False]
+    ).iloc[0]
+    class_asymmetry = class_summary.sort_values(
+        ["text_asymmetry_net", "description_only_count"], ascending=[False, False]
+    ).iloc[0]
+
+    lines = [
+        "# Wave Fifteen Findings",
+        "",
+        f"- Largest sponsor detailed-description-gap stock: {sponsor_detailed.iloc[0]['lead_sponsor_name']} at {int(sponsor_detailed.iloc[0]['detailed_gap_count']):,} studies; highest large-sponsor rate is {sponsor_detailed_rate['lead_sponsor_name']} at {sponsor_detailed_rate['detailed_gap_rate']:.1f}%.",
+        f"- Largest country-linked detailed-description-gap stock: {country_detailed.iloc[0]['country_name']} at {int(country_detailed.iloc[0]['detailed_gap_count']):,} studies; highest large-country rate is {country_detailed_rate['country_name']} at {country_detailed_rate['detailed_gap_rate']:.1f}%.",
+        f"- Largest condition-family detailed-description-gap stock: {condition_detailed.iloc[0]['condition_family_label']} at {int(condition_detailed.iloc[0]['detailed_gap_count']):,} studies; highest large-family rate is {condition_detailed_rate['condition_family_label']} at {condition_detailed_rate['detailed_gap_rate']:.1f}%.",
+        f"- Largest sponsor text-asymmetry net: {sponsor_asymmetry.iloc[0]['lead_sponsor_name']} at {int(sponsor_asymmetry.iloc[0]['text_asymmetry_net']):,}; highest large-sponsor asymmetry rate is {sponsor_asymmetry_rate['lead_sponsor_name']} at {sponsor_asymmetry_rate['text_asymmetry_rate']:.1f} percentage points.",
+        f"- Largest country-linked text-asymmetry net: {country_asymmetry.iloc[0]['country_name']} at {int(country_asymmetry.iloc[0]['text_asymmetry_net']):,}; highest large-country asymmetry rate is {country_asymmetry_rate['country_name']} at {country_asymmetry_rate['text_asymmetry_rate']:.1f} percentage points.",
+        f"- Strongest sponsor-class text asymmetry: {class_asymmetry['lead_sponsor_class']} at {int(class_asymmetry['text_asymmetry_net']):,} net description-only gaps.",
+    ]
+    (out_dir / "wave_fifteen_findings.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    args = parse_args()
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    older = load_older(Path(args.features), Path(args.context), Path(args.conditions))
+    country_long = make_country_long(older)
+
+    sponsor_summary = summarize(older, ["lead_sponsor_name", "lead_sponsor_class"])
+    sponsor_summary = sponsor_summary[sponsor_summary["studies"] >= args.min_sponsor_studies].copy()
+
+    country_summary = summarize(country_long, ["country_name"])
+    country_summary = country_summary[country_summary["studies"] >= args.min_country_studies].copy()
+
+    condition_summary = summarize(older, ["condition_family_label"])
+    condition_summary = condition_summary[condition_summary["studies"] >= args.min_condition_studies].copy()
+
+    class_summary = summarize(older, ["lead_sponsor_class"])
+
+    sponsor_detailed = sponsor_summary.sort_values(
+        ["detailed_gap_count", "detailed_gap_rate"], ascending=[False, False]
+    ).reset_index(drop=True)
+    country_detailed = country_summary.sort_values(
+        ["detailed_gap_count", "detailed_gap_rate"], ascending=[False, False]
+    ).reset_index(drop=True)
+    condition_detailed = condition_summary.sort_values(
+        ["detailed_gap_count", "detailed_gap_rate"], ascending=[False, False]
+    ).reset_index(drop=True)
+    sponsor_asymmetry = sponsor_summary.sort_values(
+        ["text_asymmetry_net", "description_only_count"], ascending=[False, False]
+    ).reset_index(drop=True)
+    country_asymmetry = country_summary.sort_values(
+        ["text_asymmetry_net", "description_only_count"], ascending=[False, False]
+    ).reset_index(drop=True)
+    detailed_class = class_summary.sort_values(
+        ["detailed_gap_count", "detailed_gap_rate"], ascending=[False, False]
+    ).reset_index(drop=True)
+    asymmetry_class = class_summary.sort_values(
+        ["text_asymmetry_net", "description_only_count"], ascending=[False, False]
+    ).reset_index(drop=True)
+
+    sponsor_detailed.to_csv(out_dir / "wave_fifteen_sponsor_detailed_description_gap.csv", index=False)
+    country_detailed.to_csv(out_dir / "wave_fifteen_country_detailed_description_gap.csv", index=False)
+    condition_detailed.to_csv(out_dir / "wave_fifteen_condition_detailed_description_gap.csv", index=False)
+    sponsor_asymmetry.to_csv(out_dir / "wave_fifteen_sponsor_text_asymmetry.csv", index=False)
+    country_asymmetry.to_csv(out_dir / "wave_fifteen_country_text_asymmetry.csv", index=False)
+    detailed_class.to_csv(out_dir / "wave_fifteen_detailed_description_gap_class_summary.csv", index=False)
+    asymmetry_class.to_csv(out_dir / "wave_fifteen_text_asymmetry_class_summary.csv", index=False)
+
+    write_findings(
+        out_dir,
+        sponsor_detailed=sponsor_detailed,
+        country_detailed=country_detailed,
+        condition_detailed=condition_detailed,
+        sponsor_asymmetry=sponsor_asymmetry,
+        country_asymmetry=country_asymmetry,
+        class_summary=asymmetry_class,
+    )
+
+
+if __name__ == "__main__":
+    main()
