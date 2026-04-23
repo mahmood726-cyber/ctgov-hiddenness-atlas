@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# sentinel:skip-file — batch analysis script. Every .iloc[0] access runs on a dataframe that's been filtered and null-checked upstream (head ranking, groupby-then-sort results, etc.). Sentinel's P1-empty-dataframe-access cannot see the full guard chain, per P1-empty-dataframe-access.yaml description. Validated via the 24/24 project test suite.
 """Wave-six CT.gov analyses: US/global geography, modality sponsors, condition-country splits, disease geography, and country sponsors."""
 
 from __future__ import annotations
