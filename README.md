@@ -59,7 +59,7 @@ python scripts/analyze_hiddenness.py
 
 This project borrows the pragmatic API usage patterns from prior local CT.gov projects, especially:
 
-- `C:\Users\user\africa_rct_efficiency_ctgov`
-- `C:\Projects\ctgov-search-strategies`
+- `africa_rct_efficiency_ctgov` (sibling working dir, user home)
+- `ctgov-search-strategies` (sibling project under `Projects/`)
 
 But unlike those projects, this one is built for the full registry and explicitly focuses on sponsor-specific non-disclosure patterns.
