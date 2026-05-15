@@ -1,6 +1,6 @@
 Mahmood Ahmad
 Tahir Heart Institute
-author@example.com
+mahmood.ahmad2@nhs.net
 
 CT.gov Hiddenness Atlas: What Sponsors Still Do Not Show
 
@@ -10,7 +10,7 @@ Outside Notes
 
 Type: methods
 Primary estimand: 2-year no-results rate among eligible closed interventional studies
-App: CT.gov Hiddenness Atlas
+App: CT.gov Hiddenness Atlas dashboard
 Data: 578,109 ClinicalTrials.gov records
 Code: https://github.com/mahmood726-cyber/ctgov-hiddenness-atlas
 Version: 1.0.0
@@ -21,7 +21,3 @@ References
 1. ClinicalTrials.gov API v2. National Library of Medicine. Accessed March 29, 2026.
 2. Page MJ, McKenzie JE, Bossuyt PM, et al. The PRISMA 2020 statement. BMJ. 2021;372:n71.
 3. Borenstein M, Hedges LV, Higgins JPT, Rothstein HR. Introduction to Meta-Analysis. 2nd ed. Wiley; 2021.
-
-AI Disclosure
-
-This work represents a compiler-generated evidence micro-publication built from structured registry data and deterministic summary code. AI was used as a constrained coding and drafting assistant for interface generation, packaging, and prose refinement, not as an autonomous author. The analytical choices, interpretation, and final outputs were reviewed by the author, who takes responsibility for the content.

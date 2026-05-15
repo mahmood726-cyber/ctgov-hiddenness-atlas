@@ -3,11 +3,9 @@
   "slug": "ctgov-hiddenness-atlas",
   "author": "Mahmood Ahmad",
   "date": "2026-03-29",
-  "path": "C:\\Projects\\ctgov-analyses/ctgov-hiddenness-atlas",
-  "type": "methods",
-  "primary_estimand": "2-year no-results rate among eligible closed interventional studies",
-  "summary": "A full-registry ClinicalTrials.gov audit of non-disclosure, sparse reporting, and sponsor-specific hiddenness patterns.",
   "body": "Which sponsor groups account for the largest registry-visible non-disclosure burden across ClinicalTrials.gov? We analysed 578,109 registry records downloaded on March 29, 2026, including 441,191 interventional studies and 290,524 closed interventional studies. We derived omission flags for missing results, missing actual completion dates, missing actual enrollment, absent IPD statements, absent publication links, sparse outcomes, and undisclosed stopping reasons, then summarized them by sponsor class, sponsor, and phase. Among closed interventional studies with primary completion at least two years earlier, 72.7 percent still had no posted results, with OTHER_GOV worst on rate at 95.7 percent and OTHER largest on volume at 127,704 studies. Industry still carried 44,007 two-year no-results studies, phase I had the highest non-reporting rate at 76.7 percent, and NIH had the highest average hiddenness score among named sponsor classes. Registry opacity is concentrated differently by class, so rates, volumes, and structural missingness must be read together. These measures capture registry-visible omission rather than legal violation.",
+  "word_count": 156,
+  "sentence_count": 7,
   "sentences": [
     {
       "role": "Question",
@@ -47,12 +45,52 @@
     "date": "2026-03-29",
     "validation": "FULL REGISTRY RUN"
   },
-  "affiliation": "Tahir Heart Institute",
-  "email": "mahmood.ahmad2@nhs.net",
-  "references": [
-    "ClinicalTrials.gov API v2. National Library of Medicine. Accessed March 29, 2026.",
-    "Page MJ, McKenzie JE, Bossuyt PM, et al. The PRISMA 2020 statement. BMJ. 2021;372:n71.",
-    "Borenstein M, Hedges LV, Higgins JPT, Rothstein HR. Introduction to Meta-Analysis. 2nd ed. Wiley; 2021."
-  ],
-  "submitted": false
+  "type": "methods",
+  "primary_estimand": "2-year no-results rate among eligible closed interventional studies",
+  "validation": {
+    "status": "fail",
+    "checks": [
+      {
+        "name": "single paragraph",
+        "ok": true,
+        "detail": "Body must not contain blank-line paragraph breaks."
+      },
+      {
+        "name": "sentence count",
+        "ok": true,
+        "detail": "Found 7 sentences."
+      },
+      {
+        "name": "word count",
+        "ok": true,
+        "detail": "Found 156 words."
+      },
+      {
+        "name": "no headings",
+        "ok": true,
+        "detail": "No markdown headings allowed in body."
+      },
+      {
+        "name": "no links",
+        "ok": true,
+        "detail": "No links or DOI links allowed in body."
+      },
+      {
+        "name": "result sentence has interval",
+        "ok": true,
+        "detail": "Sentence 4 should include a quantitative result such as a percentage, count, or interval."
+      },
+      {
+        "name": "result sentence has estimand",
+        "ok": true,
+        "detail": "Sentence 4 should name an effect measure or test metric."
+      },
+      {
+        "name": "boundary sentence present",
+        "ok": false,
+        "detail": "Sentence 7 should express a limitation, harm, or scope boundary."
+      }
+    ]
+  },
+  "schema": "e156-v0.2"
 }
