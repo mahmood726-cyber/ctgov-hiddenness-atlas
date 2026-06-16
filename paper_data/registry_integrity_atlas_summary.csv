@@ -1,0 +1,79 @@
+family,analysis,group,metric,value,unit
+Registration & architecture,Actual-field discipline,Missing actual enrollment,no-results rate,100.0,percent
+Registration & architecture,Actual-field discipline,Missing actual enrollment,ghost-protocol rate,62.8,percent
+Registration & architecture,Actual-field discipline,Missing actual completion,no-results rate,95.3,percent
+Registration & architecture,Trial-architecture gap,One-arm studies,no-results rate,72.8,percent
+Registration & architecture,Trial-architecture gap,One-arm studies,ghost-protocol rate,48.5,percent
+Registration & architecture,Trial-architecture gap,One-arm studies,hiddenness score,3.44,score
+Registration & architecture,Trial-architecture gap,>=10 arms,no-results rate,55.3,percent
+Registration & architecture,Reporting-rule era,FDAAA 801 era (2008-2016),no-results rate,67.1,percent
+Registration & architecture,Reporting-rule era,FDAAA 801 era (2008-2016),ghost-protocol rate,39.6,percent
+Registration & architecture,Reporting-rule era,Recent eligible era (2021-2024),no-results rate,77.0,percent
+Registration & architecture,Reporting-rule era,Recent eligible era (2021-2024),ghost-protocol rate,46.7,percent
+Registration & architecture,Reporting-rule era,Recent eligible era (2021-2024),full visibility,10.8,percent
+Intervention & enrollment,Intervention-type gap,Drug,no-results rate,62.6,percent
+Intervention & enrollment,Intervention-type gap,Drug,study count,118202,count
+Intervention & enrollment,Intervention-type gap,Dietary-supplement,no-results rate,90.6,percent
+Intervention & enrollment,Intervention-type gap,Procedure,no-results rate,85.3,percent
+Intervention & enrollment,Intervention-type gap,Biological,no-results rate,58.5,percent
+Intervention & enrollment,Enrollment-size gap,1-50 participants,no-results rate,73.2,percent
+Intervention & enrollment,Enrollment-size gap,1001-5000 participants,no-results rate,62.4,percent
+Intervention & enrollment,Stopped-trial disclosure,Withdrawn,no-results rate,100.0,percent
+Intervention & enrollment,Stopped-trial disclosure,Suspended,no-results rate,99.3,percent
+Intervention & enrollment,Stopped-trial disclosure,Terminated,no-results rate,58.3,percent
+Intervention & enrollment,Stopped-trial disclosure,Missing termination reason,no-results rate,82.1,percent
+Geography & outcomes,Disease geography gap,"Cardiovascular, U.S.+non-U.S.",no-results rate,29.9,percent
+Geography & outcomes,Disease geography gap,"Metabolic, U.S.+non-U.S.",no-results rate,29.4,percent
+Geography & outcomes,Disease geography gap,"Oncology, U.S.+non-U.S.",no-results rate,39.4,percent
+Geography & outcomes,Disease geography gap,"Cardiovascular, non-U.S.",no-results rate,89.9,percent
+Geography & outcomes,Disease geography gap,"Metabolic, non-U.S.",no-results rate,90.3,percent
+Geography & outcomes,Disease geography gap,"Oncology, non-U.S.",no-results rate,86.8,percent
+Geography & outcomes,Country reporting map,Egypt,no-results rate,95.8,percent
+Geography & outcomes,Country reporting map,China,no-results rate,81.7,percent
+Geography & outcomes,Country reporting map,United States,no-results rate,52.1,percent
+Geography & outcomes,Country reporting map,Australia,no-results rate,43.4,percent
+Geography & outcomes,Country reporting map,Poland,no-results rate,33.5,percent
+Geography & outcomes,Outcome-density gap,Zero primary outcomes,no-results rate,100.0,percent
+Geography & outcomes,Outcome-density gap,>=10 secondary outcomes,no-results rate,56.7,percent
+Design & delay,Design-purpose hiddenness,Treatment,no-results rate,68.3,percent
+Design & delay,Design-purpose hiddenness,No recorded primary purpose,no-results rate,86.4,percent
+Design & delay,Completion-delay debt,Same-year submission-to-completion,no-results rate,85.7,percent
+Design & delay,Completion-delay debt,6-10 year delay,no-results rate,57.6,percent
+Design & delay,Country-condition hiddenness,Cardiovascular x Egypt,no-results rate,95.9,percent
+Design & delay,Country-condition hiddenness,Oncology x China,no-results rate,79.0,percent
+Site & sponsor class,Geography-scale visibility,Single-site,no-results rate,79.5,percent
+Site & sponsor class,Geography-scale visibility,>=20 sites,no-results rate,31.7,percent
+Site & sponsor class,Geography-scale visibility,Phase III single-site,no-results rate,76.3,percent
+Site & sponsor class,Geography-scale visibility,Phase III >=20 sites,no-results rate,25.7,percent
+Site & sponsor class,U.S. vs ex-U.S.,Any-U.S.,no-results rate,52.1,percent
+Site & sponsor class,U.S. vs ex-U.S.,No-U.S.,no-results rate,88.7,percent
+Site & sponsor class,U.S. vs global,U.S.-plus-non-U.S.,no-results rate,30.2,percent
+Site & sponsor class,U.S. vs global,U.S.-only,no-results rate,55.8,percent
+Cross-registry atlas,Hiddenness atlas,All closed interventional (>=2y),no-results rate,72.7,percent
+Cross-registry atlas,Hiddenness atlas,OTHER_GOV,no-results rate,95.7,percent
+Cross-registry atlas,Hiddenness atlas,OTHER,study count,127704,count
+Cross-registry atlas,Hiddenness atlas,Industry,two-year no-results studies,44007,count
+Cross-registry atlas,Hiddenness atlas,Phase I,no-results rate,76.7,percent
+Cross-registry atlas,Industry disclosure gap,Industry,no-results rate,58.1,percent
+Cross-registry atlas,Industry disclosure gap,Industry,missing IPD statements,63.2,percent
+Cross-registry atlas,Completion-cohort debt,2008-2012 era,no-results rate,64.4,percent
+Cross-registry atlas,Completion-cohort debt,2021-2024 era,no-results rate,77.0,percent
+Disease family,Cardiovascular hiddenness,All older CV,no-results rate,75.0,percent
+Disease family,Cardiovascular hiddenness,All older CV,ghost-protocol rate,39.3,percent
+Disease family,Cardiovascular hiddenness,Assistance Publique - Hopitaux de Paris,missing-results stock,144,count
+Disease family,Metabolic hiddenness,All older metabolic,no-results rate,76.2,percent
+Disease family,Metabolic hiddenness,All older metabolic,ghost-protocol rate,41.9,percent
+Disease family,Metabolic hiddenness,Novo Nordisk A/S,missing-results stock,391,count
+Disease family,Oncology hiddenness,All older oncology,no-results rate,67.0,percent
+Disease family,Oncology hiddenness,All older oncology,ghost-protocol rate,42.5,percent
+Disease family,Oncology hiddenness,EARLY_PHASE1,no-results rate,87.9,percent
+Disease family,Oncology hiddenness,National Cancer Institute (NCI),missing-results stock,909,count
+Excess watchlists,Country excess,France,adjusted excess no-results stock,2187,count
+Excess watchlists,Country excess,China,adjusted excess no-results stock,1299,count
+Excess watchlists,Country excess,Egypt,adjusted excess no-results stock,824,count
+Excess watchlists,Condition excess,Oncology,adjusted excess no-results stock,543,count
+Excess watchlists,Condition excess,Cardiovascular,adjusted excess no-results stock,373,count
+Excess watchlists,Condition excess,Metabolic,adjusted excess no-results stock,251,count
+Excess watchlists,Sponsor excess,Assistance Publique - Hopitaux de Paris,adjusted excess no-results stock,265,count
+Excess watchlists,Sponsor excess,Sanofi,adjusted excess no-results stock,197,count
+Excess watchlists,Sponsor excess,Cairo University,adjusted excess no-results stock,164,count

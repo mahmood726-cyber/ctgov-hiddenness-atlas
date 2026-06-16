@@ -63,3 +63,12 @@ This project borrows the pragmatic API usage patterns from prior local CT.gov pr
 - `ctgov-search-strategies` (sibling project under `Projects/`)
 
 But unlike those projects, this one is built for the full registry and explicitly focuses on sponsor-specific non-disclosure patterns.
+
+## Paper data (Synthesis Research Article)
+
+The processed aggregate summaries and figures underlying the consolidated Research
+Article "Auditing the public clinical-trials record: a registry-integrity atlas"
+(Andrew Woo, Synthesis, 2026) are archived in [`paper_data/`](paper_data/):
+summary CSV, the six published figures, data provenance, and Zenodo metadata.
+Source: ClinicalTrials.gov API v2 snapshot of 29 March 2026 (raw snapshot not retained;
+see paper_data/DATA_PROVENANCE.md).

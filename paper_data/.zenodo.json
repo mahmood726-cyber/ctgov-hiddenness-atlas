@@ -1,0 +1,29 @@
+{
+  "title": "Auditing the public clinical-trials record: a registry-integrity atlas — processed summary data and figures",
+  "upload_type": "dataset",
+  "description": "Processed aggregate summaries and publication figures underlying the Synthesis Research Article 'Auditing the public clinical-trials record: a registry-integrity atlas of registration, reporting and completion gaps' (Andrew Woo, 2026). Source: ClinicalTrials.gov API v2 full-registry snapshot of 29 March 2026 (578,109 studies). The raw snapshot was not retained; analyses reproduce on an independent snapshot within <=0.3 percentage points. Every value is traceable to the article text. CC BY 4.0.",
+  "creators": [
+    {
+      "name": "Woo, Andrew",
+      "orcid": "0009-0004-2986-1872",
+      "affiliation": "St George's, University of London, London, UK"
+    }
+  ],
+  "license": "cc-by-4.0",
+  "keywords": [
+    "ClinicalTrials.gov",
+    "trial registries",
+    "results reporting",
+    "reporting bias",
+    "research transparency",
+    "meta-research"
+  ],
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "https://synthesis-medicine.org/index.php/journal/article/view/registry-integrity-atlas",
+      "scheme": "url"
+    }
+  ]
+}
