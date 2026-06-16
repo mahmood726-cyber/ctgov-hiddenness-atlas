@@ -20,8 +20,9 @@ The analysis code (per-analysis repositories under
 `https://github.com/mahmood726-cyber/ctgov-*`) re-derives these summaries from a
 fresh ClinicalTrials.gov API v2 pull. The analyses were **independently reproduced
 by re-running the code against a ClinicalTrials.gov snapshot 14 days after the
-article's**; all headline figures matched within **<= 0.3 percentage points**. No
-bit-for-bit reproduction is claimed, because the original snapshot was not retained.
+article's**; the headline figures reproduced closely, with **approximately 24 of 26
+matching within 0.3 percentage points**. No bit-for-bit reproduction is claimed,
+because the original snapshot was not retained.
 
 ## Ownership
 The per-analysis code repositories are hosted on the journal operator's GitHub
