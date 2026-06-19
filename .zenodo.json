@@ -1,0 +1,29 @@
+{
+  "title": "ClinicalTrials.gov registry-integrity atlas: code, processed summaries and figures",
+  "upload_type": "software",
+  "description": "Analysis code, processed aggregate summaries and figures underlying the Synthesis Research Article 'Auditing the public clinical-trials record: a registry-integrity atlas of registration, reporting and completion gaps' (Andrew Woo, 2026). Source: ClinicalTrials.gov API v2 full-registry snapshot of 29 March 2026 (578,109 studies). Software/data author: Mahmood Ahmad (automated analysis pipeline); the paper author (A. Woo) differs from the software author. MIT (code) / CC BY 4.0 (data, figures).",
+  "creators": [
+    {
+      "name": "Ahmad, Mahmood",
+      "orcid": "0000-0001-9107-3704",
+      "affiliation": "Tahir Heart Institute"
+    }
+  ],
+  "license": "mit",
+  "access_right": "open",
+  "keywords": [
+    "ClinicalTrials.gov",
+    "trial registries",
+    "results reporting",
+    "reporting bias",
+    "research transparency",
+    "meta-research"
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "https://synthesis-medicine.org/index.php/journal/article/view/registry-integrity-atlas",
+      "scheme": "url"
+    }
+  ]
+}
