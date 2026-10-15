@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from scripts.snapshot_integrity import SnapshotAudit, sha256_file, validate_snapshot_metadata
+from scripts.fetch_registry_snapshot import assert_stable_epoch
 
 
 def page(ids, next_token=None, total=2):
@@ -71,6 +72,12 @@ class TestSnapshotIntegrity(unittest.TestCase):
             path.write_bytes(b"tampered")
             with self.assertRaisesRegex(ValueError, "SHA-256"):
                 validate_snapshot_metadata(meta, path)
+
+    def test_change_in_api_timestamp_is_detected(self):
+        first = {"apiVersion": "2.0.5", "dataTimestamp": "2026-10-14T09:00:05"}
+        assert_stable_epoch(first, dict(first))
+        with self.assertRaisesRegex(RuntimeError, "changed during pagination"):
+            assert_stable_epoch(first, {**first, "dataTimestamp": "2026-10-15T09:00:05"})
 
     def test_claimed_complete_with_wrong_counts_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
