@@ -13,6 +13,11 @@ from typing import Any, Iterable
 
 import pandas as pd
 
+try:
+    from .snapshot_integrity import validate_snapshot_metadata
+except ImportError:  # Support direct invocation via scripts/analyze_hiddenness.py
+    from snapshot_integrity import validate_snapshot_metadata
+
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "processed"
@@ -63,6 +68,11 @@ def parse_args() -> argparse.Namespace:
         "--as-of-date",
         default=date.today().isoformat(),
         help="Reference date for 1-year and 2-year results-gap calculations",
+    )
+    parser.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help="Explicitly permit an incomplete query export (never interpret as full registry)",
     )
     parser.add_argument(
         "--min-sponsor-studies",
@@ -471,9 +481,12 @@ def main() -> None:
     if not as_of_date:
         raise ValueError(f"Invalid --as-of-date: {args.as_of_date}")
 
-    metadata = {}
-    if metadata_path.exists():
-        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if not metadata_path.is_file():
+        raise FileNotFoundError(f"Registry fetch metadata missing: {metadata_path}")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    validate_snapshot_metadata(metadata, input_path, allow_partial=args.allow_partial)
+    if metadata.get("coverage") == "partial":
+        print("WARNING: analyzing partial CT.gov export; conclusions do not generalize to full registry.")
 
     rows: list[dict[str, Any]] = []
     for index, study in enumerate(read_jsonl(input_path), start=1):

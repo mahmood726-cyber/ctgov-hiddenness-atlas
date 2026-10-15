@@ -72,3 +72,11 @@ Article "Auditing the public clinical-trials record: a registry-integrity atlas"
 summary CSV, the six published figures, data provenance, and Zenodo metadata.
 Source: ClinicalTrials.gov API v2 snapshot of 29 March 2026 (raw snapshot not retained;
 see paper_data/DATA_PROVENANCE.md).
+
+## Registry snapshot integrity (October 2026)
+
+The full-registry downloader now verifies the first-page API total, checks unique NCT identifiers across *every* page, rejects repeated cursors, and refuses to certify a truncated crawl. It writes a temporary gzip first and only replaces the canonical snapshot when pagination and count checks succeed. The accompanying metadata records `coverage`, `scope_complete`, query scope, record counts, and a SHA-256 checksum.
+
+`python scripts/fetch_registry_snapshot.py --max-pages 3` is **deliberately partial**. Downstream `python scripts/analyze_hiddenness.py` refuses partial or checksum-mismatched snapshots by default; use `--allow-partial` only for exploratory analyses clearly labelled as non-generalizable. The same safeguards also check legacy metadata counts when older snapshots lack checksums.
+
+These checks establish **export integrity**, not a legally meaningful results-reporting obligation or an atomic point-in-time snapshot: CT.gov is a live registry and records may change during pagination. Claims about FDAAA 801 applicability still require separate trial-level review.
