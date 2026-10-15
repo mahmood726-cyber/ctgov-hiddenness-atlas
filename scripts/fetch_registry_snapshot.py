@@ -21,6 +21,7 @@ except ImportError:  # Support direct execution: python scripts/fetch_registry_s
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 CTGOV_API = "https://clinicaltrials.gov/api/v2/studies"
+CTGOV_VERSION = "https://clinicaltrials.gov/api/v2/version"
 USER_AGENT = "ctgov-hiddenness-atlas/0.1"
 
 FIELD_PATHS = [
@@ -99,10 +100,33 @@ def fetch_page(session: requests.Session, params: dict[str, Any]) -> dict[str, A
     raise RuntimeError(f"Failed after repeated retries: {last_error}") from last_error
 
 
+def get_source_epoch(session: requests.Session) -> dict[str, str]:
+    """Identify the API dataset release bracketing the long paginated scan."""
+    response = session.get(CTGOV_VERSION, timeout=30)
+    response.raise_for_status()
+    payload = response.json()
+    if not isinstance(payload, dict) or not all(
+        isinstance(payload.get(k), str) and payload[k]
+        for k in ("apiVersion", "dataTimestamp")
+    ):
+        raise ValueError("Invalid ClinicalTrials.gov API version response")
+    return {k: payload[k] for k in ("apiVersion", "dataTimestamp")}
+
+
+def assert_stable_epoch(start: dict[str, str], end: dict[str, str]) -> None:
+    if start != end:
+        raise RuntimeError(
+            "ClinicalTrials.gov dataset version changed during pagination; "
+            f"start={start!r} end={end!r}. Refusing mixed-release snapshot."
+        )
+
+
 def main() -> None:
     args = parse_args()
     if not 1 <= args.page_size <= 1000:
         raise ValueError("--page-size must be in [1, 1000]")
+    if not args.output_stem or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-" for c in args.output_stem):
+        raise ValueError("--output-stem must contain only ASCII letters, digits, _ or -")
     if args.sleep_seconds < 0 or args.max_pages < 0:
         raise ValueError("--sleep-seconds and --max-pages must be non-negative")
 
@@ -126,6 +150,7 @@ def main() -> None:
     started_at = datetime.now(UTC)
     next_token = None
     try:
+        api_start = get_source_epoch(session)
         with gzip.open(temp_path, "wt", encoding="utf-8") as handle:
             while True:
                 request_token = next_token
@@ -156,12 +181,17 @@ def main() -> None:
                 if args.sleep_seconds > 0:
                     time.sleep(args.sleep_seconds)
 
+        api_end = get_source_epoch(session)
+        assert_stable_epoch(api_start, api_end)
         integrity = audit.finish(complete=not next_token)
         finished_at = datetime.now(UTC)
         metadata = {
             "fetched_at": finished_at.isoformat(),
             "started_at": started_at.isoformat(),
             "api_url": CTGOV_API,
+            "api_version": api_start["apiVersion"],
+            "api_data_timestamp": api_start["dataTimestamp"],
+            "api_epoch_stable": True,
             "query_term": args.query_term,
             "page_size": args.page_size,
             **integrity,

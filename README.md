@@ -80,3 +80,11 @@ The full-registry downloader now verifies the first-page API total, checks uniqu
 `python scripts/fetch_registry_snapshot.py --max-pages 3` is **deliberately partial**. Downstream `python scripts/analyze_hiddenness.py` refuses partial or checksum-mismatched snapshots by default; use `--allow-partial` only for exploratory analyses clearly labelled as non-generalizable. The same safeguards also check legacy metadata counts when older snapshots lack checksums.
 
 These checks establish **export integrity**, not a legally meaningful results-reporting obligation or an atomic point-in-time snapshot: CT.gov is a live registry and records may change during pagination. Claims about FDAAA 801 applicability still require separate trial-level review.
+
+### API release-pinning and live smoke validation
+
+A full export now reads `https://clinicaltrials.gov/api/v2/version` **before and after pagination**, checking that both `apiVersion` and `dataTimestamp` match. If CT.gov refreshes its dataset during a long scan, the exporter aborts rather than certifying a mixed-release snapshot. The metadata records `api_version`, `api_data_timestamp`, and `api_epoch_stable` alongside the SHA-256 and count checks. This is release consistency checking, **not** a guarantee of an atomic individual-trial historical snapshot.
+
+`python -m unittest discover -s tests -p 'test_live_api.py' -v` performs a real, one-trial, network-dependent API query for NCT02993146, verifies complete single-trial paging and SHA-256, then checks that the downstream atlas flattener preserves the posted-results status and primary outcome details. GitHub Actions runs this separately from the offline tests; when the public service is unavailable, the network check can fail despite correct local code.
+
+The smoke test is a contract test, **not** a regeneration or confirmation of the previously published full-registry results.
