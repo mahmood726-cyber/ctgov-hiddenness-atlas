@@ -13,6 +13,11 @@ from typing import Any
 
 import requests
 
+try:
+    from .snapshot_integrity import SnapshotAudit, sha256_file
+except ImportError:  # Support direct execution: python scripts/fetch_registry_snapshot.py
+    from snapshot_integrity import SnapshotAudit, sha256_file
+
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 CTGOV_API = "https://clinicaltrials.gov/api/v2/studies"
@@ -96,10 +101,17 @@ def fetch_page(session: requests.Session, params: dict[str, Any]) -> dict[str, A
 
 def main() -> None:
     args = parse_args()
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    if not 1 <= args.page_size <= 1000:
+        raise ValueError("--page-size must be in [1, 1000]")
+    if args.sleep_seconds < 0 or args.max_pages < 0:
+        raise ValueError("--sleep-seconds and --max-pages must be non-negative")
 
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
     output_path = RAW_DIR / f"{args.output_stem}.jsonl.gz"
     metadata_path = RAW_DIR / f"{args.output_stem}_metadata.json"
+    # An interrupted run must not replace a previously usable snapshot.
+    temp_path = RAW_DIR / f"{args.output_stem}.jsonl.gz.partial"
+    temp_metadata = RAW_DIR / f"{args.output_stem}_metadata.json.partial"
 
     session = get_session()
     params: dict[str, Any] = {
@@ -110,65 +122,65 @@ def main() -> None:
     if args.query_term:
         params["query.term"] = args.query_term
 
-    fetched_records = 0
-    pages = 0
-    total_count = None
+    audit = SnapshotAudit()
     started_at = datetime.now(UTC)
     next_token = None
+    try:
+        with gzip.open(temp_path, "wt", encoding="utf-8") as handle:
+            while True:
+                request_token = next_token
+                if request_token:
+                    params["pageToken"] = request_token
+                else:
+                    params.pop("pageToken", None)
 
-    with gzip.open(output_path, "wt", encoding="utf-8") as handle:
-        while True:
-            if next_token:
-                params["pageToken"] = next_token
-            else:
-                params.pop("pageToken", None)
+                payload = fetch_page(session, params)
+                batch, next_token = audit.register_page(payload, request_token)
+                if audit.pages_fetched == 1:
+                    print(f"API totalCount: {audit.total_count}")
+                for study in batch:
+                    handle.write(json.dumps(study, separators=(",", ":")))
+                    handle.write("\n")
 
-            payload = fetch_page(session, params)
-            batch = payload.get("studies", [])
-            pages += 1
+                if audit.pages_fetched == 1 or audit.pages_fetched % 10 == 0 or not next_token:
+                    print(
+                        f"page={audit.pages_fetched} batch={len(batch)} "
+                        f"fetched={audit.records_fetched} total={audit.total_count}"
+                    )
+                if not next_token:
+                    break
+                if args.max_pages and audit.pages_fetched >= args.max_pages:
+                    break
 
-            if total_count is None:
-                total_count = payload.get("totalCount", 0)
-                print(f"API totalCount: {total_count}")
+                params.pop("countTotal", None)
+                if args.sleep_seconds > 0:
+                    time.sleep(args.sleep_seconds)
 
-            for study in batch:
-                handle.write(json.dumps(study, separators=(",", ":")))
-                handle.write("\n")
+        integrity = audit.finish(complete=not next_token)
+        finished_at = datetime.now(UTC)
+        metadata = {
+            "fetched_at": finished_at.isoformat(),
+            "started_at": started_at.isoformat(),
+            "api_url": CTGOV_API,
+            "query_term": args.query_term,
+            "page_size": args.page_size,
+            **integrity,
+            "truncated_by_max_pages": bool(next_token),
+            "fields": FIELD_PATHS,
+            "output_file": str(output_path),
+            "file_sha256": sha256_file(temp_path),
+            "source_caveat": "Paginated query export; not an atomic database-time snapshot",
+        }
+        temp_metadata.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+        temp_path.replace(output_path)
+        temp_metadata.replace(metadata_path)
 
-            fetched_records += len(batch)
-            next_token = payload.get("nextPageToken")
-            if pages == 1 or pages % 10 == 0 or not next_token:
-                print(
-                    f"page={pages} batch={len(batch)} fetched={fetched_records}"
-                    + (f" total={total_count}" if total_count is not None else "")
-                )
-
-            if not next_token:
-                break
-            if args.max_pages and pages >= args.max_pages:
-                break
-
-            params.pop("countTotal", None)
-            if args.sleep_seconds > 0:
-                time.sleep(args.sleep_seconds)
-
-    finished_at = datetime.now(UTC)
-    metadata = {
-        "fetched_at": finished_at.isoformat(),
-        "started_at": started_at.isoformat(),
-        "api_url": CTGOV_API,
-        "query_term": args.query_term,
-        "page_size": args.page_size,
-        "pages_fetched": pages,
-        "records_fetched": fetched_records,
-        "total_count": total_count,
-        "fields": FIELD_PATHS,
-        "output_file": str(output_path),
-    }
-    metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
-
-    print(f"Raw snapshot written to {output_path}")
-    print(f"Metadata written to {metadata_path}")
+        print(f"Raw snapshot ({integrity['coverage']}) written to {output_path}")
+        print(f"Metadata written to {metadata_path}")
+    finally:
+        session.close()
+        temp_path.unlink(missing_ok=True)
+        temp_metadata.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
