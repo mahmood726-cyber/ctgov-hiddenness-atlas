@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import re
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Iterable
@@ -47,6 +48,10 @@ ALL_BOOL_METRICS = [
     "completion_actual_missing_closed",
     "enrollment_actual_missing_closed",
     "termination_reason_missing",
+    "eligible_results_gap_1y",
+    "eligible_results_gap_2y",
+    "results_status_known",
+    "results_status_conflict",
     "results_gap_1y",
     "results_gap_2y",
 ]
@@ -66,13 +71,17 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--as-of-date",
-        default=date.today().isoformat(),
-        help="Reference date for 1-year and 2-year results-gap calculations",
+        default=None,
+        help="As-of date YYYY-MM-DD (must equal metadata API data date; defaults to that date)",
     )
     parser.add_argument(
         "--allow-partial",
         action="store_true",
         help="Explicitly permit an incomplete query export (never interpret as full registry)",
+    )
+    parser.add_argument(
+        "--allow-query-subset", action="store_true",
+        help="Allow a query-filtered export, explicitly not a full-registry estimate",
     )
     parser.add_argument(
         "--min-sponsor-studies",
@@ -92,6 +101,44 @@ def parse_date(value: str | None) -> date | None:
         except ValueError:
             continue
     return None
+
+
+
+def parse_exact_day(value: str | None) -> date | None:
+    """Do not convert YYYY or YYYY-MM registry dates into invented day-1 dates."""
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def years_elapsed(start: date | None, as_of: date, years: int) -> bool:
+    """One/two calendar-year anniversary, not fixed 365/730-day thresholds."""
+    if start is None or start > as_of or years <= 0:
+        return False
+    try:
+        anniversary = start.replace(year=start.year + years)
+    except ValueError:  # February 29 -> March 1 in a non-leap anniversary year.
+        anniversary = date(start.year + years, 3, 1)
+    return as_of >= anniversary
+
+
+def resolve_snapshot_as_of(metadata: dict[str, Any], requested: str | None = None) -> date:
+    """Never project a historical hasResults snapshot into an unsourced later date."""
+    timestamp = metadata.get("api_data_timestamp") or metadata.get("fetched_at")
+    snapshot_day = parse_exact_day(timestamp[:10] if isinstance(timestamp, str) else None)
+    if snapshot_day is None:
+        raise ValueError("Snapshot provenance lacks a valid API dataTimestamp or fetched_at date")
+    if requested is not None:
+        requested_day = parse_exact_day(requested)
+        if requested_day is None or requested_day != snapshot_day:
+            raise ValueError(
+                "An as-of date differing from the registry source date cannot be "
+                "used with current-record hasResults; obtain a matching dated export"
+            )
+    return snapshot_day
 
 
 def text_present(value: Any) -> bool:
@@ -166,15 +213,32 @@ def flatten_study(study: dict[str, Any], as_of_date: date) -> dict[str, Any]:
     is_stopped = status_norm in STOPPED_STATUSES
 
     start_date = parse_date(status.get("startDateStruct", {}).get("date"))
-    primary_completion_date = parse_date(status.get("primaryCompletionDateStruct", {}).get("date"))
+    primary_source_date = status.get("primaryCompletionDateStruct", {}).get("date")
+    primary_completion_date = parse_date(primary_source_date)
+    primary_completion_exact = parse_exact_day(primary_source_date)
     completion_date = parse_date(status.get("completionDateStruct", {}).get("date"))
     study_first_submit_date = parse_date(status.get("studyFirstSubmitDate"))
-    results_first_post_date = parse_date(status.get("resultsFirstPostDateStruct", {}).get("date"))
+    results_source_date = status.get("resultsFirstPostDateStruct", {}).get("date")
+    results_first_post_date = parse_date(results_source_date)
+    results_first_post_exact = parse_exact_day(results_source_date)
 
     primary_completion_type = status.get("primaryCompletionDateStruct", {}).get("type", "")
     completion_type = status.get("completionDateStruct", {}).get("type", "")
     enrollment_count = design.get("enrollmentInfo", {}).get("count")
     enrollment_type = design.get("enrollmentInfo", {}).get("type", "")
+    raw_has_results = study.get("hasResults")
+    results_status_known = type(raw_has_results) is bool
+    results_status_conflict = raw_has_results is False and bool(results_source_date)
+    exact_actual_primary = (
+        primary_completion_exact is not None
+        and str(primary_completion_type).upper() == "ACTUAL"
+    )
+    eligible_source = (
+        is_interventional and is_closed and exact_actual_primary
+        and results_status_known and not results_status_conflict
+    )
+    eligible_gap_1y = eligible_source and years_elapsed(primary_completion_exact, as_of_date, 1)
+    eligible_gap_2y = eligible_source and years_elapsed(primary_completion_exact, as_of_date, 2)
 
     countries = sorted(
         {
@@ -201,8 +265,8 @@ def flatten_study(study: dict[str, Any], as_of_date: date) -> dict[str, Any]:
         and str(ref.get("type", "")).upper() == "RESULT"
     ]
 
-    days_since_primary_completion = days_between(primary_completion_date, as_of_date)
-    results_reporting_lag_days = days_between(primary_completion_date, results_first_post_date)
+    days_since_primary_completion = days_between(primary_completion_exact, as_of_date)
+    results_reporting_lag_days = days_between(primary_completion_exact, results_first_post_exact)
 
     primary_outcome_descriptions = [
         outcome.get("description", "")
@@ -224,9 +288,11 @@ def flatten_study(study: dict[str, Any], as_of_date: date) -> dict[str, Any]:
         "primary_purpose": design_info.get("primaryPurpose", ""),
         "study_first_submit_date": study_first_submit_date.isoformat() if study_first_submit_date else "",
         "start_date": start_date.isoformat() if start_date else "",
-        "primary_completion_date": primary_completion_date.isoformat() if primary_completion_date else "",
+        "primary_completion_date": primary_source_date or "",
+        "primary_completion_date_precision": "DAY" if primary_completion_exact else ("PARTIAL" if primary_source_date else "MISSING"),
         "completion_date": completion_date.isoformat() if completion_date else "",
-        "results_first_post_date": results_first_post_date.isoformat() if results_first_post_date else "",
+        "results_first_post_date": results_source_date or "",
+        "results_first_post_date_precision": "DAY" if results_first_post_exact else ("PARTIAL" if results_source_date else "MISSING"),
         "primary_completion_date_type": primary_completion_type,
         "completion_date_type": completion_type,
         "enrollment_count": enrollment_count,
@@ -242,7 +308,11 @@ def flatten_study(study: dict[str, Any], as_of_date: date) -> dict[str, Any]:
         "secondary_outcome_count": len(secondary_outcomes),
         "pmid_reference_count": len(pmid_refs),
         "result_reference_count": len(result_pmid_refs),
-        "has_results": bool(study.get("hasResults", False)),
+        "has_results": bool(raw_has_results),
+        "results_status_known": results_status_known,
+        "results_status_conflict": results_status_conflict,
+        "eligible_results_gap_1y": eligible_gap_1y,
+        "eligible_results_gap_2y": eligible_gap_2y,
         "is_interventional": is_interventional,
         "is_closed": is_closed,
         "is_stopped": is_stopped,
@@ -266,16 +336,8 @@ def flatten_study(study: dict[str, Any], as_of_date: date) -> dict[str, Any]:
         "enrollment_actual_missing_closed": is_closed
         and (enrollment_count in (None, "") or str(enrollment_type).upper() != "ACTUAL"),
         "termination_reason_missing": is_stopped and not text_present(status.get("whyStopped")),
-        "results_gap_1y": is_interventional
-        and is_closed
-        and days_since_primary_completion is not None
-        and days_since_primary_completion >= 365
-        and not bool(study.get("hasResults", False)),
-        "results_gap_2y": is_interventional
-        and is_closed
-        and days_since_primary_completion is not None
-        and days_since_primary_completion >= 730
-        and not bool(study.get("hasResults", False)),
+        "results_gap_1y": eligible_gap_1y and raw_has_results is False,
+        "results_gap_2y": eligible_gap_2y and raw_has_results is False,
     }
 
     structural_flags = [
@@ -323,8 +385,8 @@ def summarize_groups(df: pd.DataFrame, group_col: str | list[str]) -> pd.DataFra
             median_hiddenness_score=("hiddenness_score", "median"),
             results_gap_1y_count=("results_gap_1y", "sum"),
             results_gap_2y_count=("results_gap_2y", "sum"),
-            eligible_results_gap_1y_count=("days_since_primary_completion", lambda s: int(s.fillna(-1).ge(365).sum())),
-            eligible_results_gap_2y_count=("days_since_primary_completion", lambda s: int(s.fillna(-1).ge(730).sum())),
+            eligible_results_gap_1y_count=("eligible_results_gap_1y", "sum"),
+            eligible_results_gap_2y_count=("eligible_results_gap_2y", "sum"),
             official_title_missing_rate=("official_title_missing", "mean"),
             detailed_description_missing_rate=("detailed_description_missing", "mean"),
             location_missing_rate=("location_missing", "mean"),
@@ -371,10 +433,10 @@ def write_findings(
     closed_interventional_df = df[df["is_interventional"] & df["is_closed"]].copy()
     closed_interventional_count = len(closed_interventional_df)
     aged_interventional_1y_df = closed_interventional_df[
-        closed_interventional_df["days_since_primary_completion"].fillna(-1) >= 365
+        closed_interventional_df["eligible_results_gap_1y"]
     ].copy()
     aged_interventional_2y_df = closed_interventional_df[
-        closed_interventional_df["days_since_primary_completion"].fillna(-1) >= 730
+        closed_interventional_df["eligible_results_gap_2y"]
     ].copy()
 
     sponsor_closed_by_rate = sponsor_closed[sponsor_closed["studies"] >= 100].sort_values(
@@ -397,7 +459,10 @@ def write_findings(
     lines = [
         "# Hiddenness Findings",
         "",
-        f"As of {as_of_date.isoformat()}, the raw registry snapshot contains {metadata.get('records_fetched', total_studies):,} studies.",
+        f"As of {as_of_date.isoformat()} (registry source date), the export contains {metadata.get('records_fetched', total_studies):,} studies.",
+        f"Source scope: {'query-filtered subset (' + str(metadata.get('query_term')) + ')' if metadata.get('query_term') else 'unfiltered registry query'}.",
+        "",
+        "No-results rates use only closed interventional studies with an ACTUAL, day-precise primary completion date, a known non-conflicting posted-results indicator, and the complete one/two-calendar-year interval elapsed as of the source date. These are registry-visible gaps, not legal ACT/FDAAA overdue findings.",
         "",
         "## Snapshot",
         "",
@@ -405,7 +470,7 @@ def write_findings(
         f"- Interventional studies: {interventional:,}",
         f"- Closed studies: {closed:,}",
         f"- Closed interventional studies: {closed_interventional_count:,}",
-        f"- Closed interventional studies with an actual primary completion date at least 2 years old: {len(aged_interventional_2y_df):,}",
+        f"- Closed interventional studies with a day-precise ACTUAL primary completion date at least 2 calendar years old and known results status: {len(aged_interventional_2y_df):,}",
         "",
         "## What Is Most Often Missing",
         "",
@@ -477,14 +542,18 @@ def main() -> None:
     metadata_path = Path(args.metadata)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    as_of_date = parse_date(args.as_of_date)
-    if not as_of_date:
-        raise ValueError(f"Invalid --as-of-date: {args.as_of_date}")
-
     if not metadata_path.is_file():
         raise FileNotFoundError(f"Registry fetch metadata missing: {metadata_path}")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    as_of_date = resolve_snapshot_as_of(metadata, args.as_of_date)
     validate_snapshot_metadata(metadata, input_path, allow_partial=args.allow_partial)
+    if metadata.get("query_term") and not args.allow_query_subset:
+        raise ValueError(
+            "Query-filtered export is not full registry data; rerun with an unfiltered "
+            "snapshot or explicitly use --allow-query-subset for exploratory analysis"
+        )
+    if metadata.get("query_term"):
+        print("WARNING: query-filtered cohort; not representative of full registry.")
     if metadata.get("coverage") == "partial":
         print("WARNING: analyzing partial CT.gov export; conclusions do not generalize to full registry.")
 
@@ -493,6 +562,16 @@ def main() -> None:
         rows.append(flatten_study(study, as_of_date))
         if index % 10000 == 0:
             print(f"flattened {index} studies")
+
+    if not rows:
+        raise ValueError("No registry records available for analysis")
+    if len(rows) != metadata["records_fetched"]:
+        raise ValueError("Decoded row count does not match registry snapshot metadata")
+    ids = [row["nct_id"] for row in rows]
+    if any(not isinstance(nct_id, str) or not re.fullmatch(r"NCT\d{8}", nct_id) for nct_id in ids):
+        raise ValueError("Snapshot contains invalid NCT identifiers")
+    if len(ids) != len(set(ids)):
+        raise ValueError("Duplicate NCT identifiers in registry source")
 
     df = pd.DataFrame(rows)
     for metric in ALL_BOOL_METRICS:
