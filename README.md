@@ -1,5 +1,7 @@
 # CT.gov Hiddenness Atlas
 
+> **Reporting-gap methodology correction (18 October 2026):** The earlier age-eligible denominator could include non-eligible studies, and partial/estimated completion dates could be treated as exact. The calculation now requires a closed interventional study, day-precise ACTUAL primary completion, a known consistent `hasResults` status, and an elapsed calendar-year anniversary on the API dataset date. **The old published March 2026 figures have not yet been recomputed and must not be represented as corrected or independently validated.** See [Metric Framework](docs/metric_framework.md).
+
 This project builds a full-registry ClinicalTrials.gov transparency analysis from the live v2 API. It is designed to move beyond small CT.gov search experiments and instead profile registry-visible non-disclosure patterns across the whole platform.
 
 On March 29, 2026, the official API reported `578109` studies in total. The user request referred to roughly 550,000 records; this project is set up to use the current full registry size rather than a sample.
@@ -34,11 +36,13 @@ Create the raw snapshot:
 python scripts/fetch_registry_snapshot.py
 ```
 
-Run the hiddenness analysis:
+Run the hiddenness analysis against the downloaded release (the as-of date is taken from `api_data_timestamp` or legacy `fetched_at`, never the current wall clock):
 
 ```bash
 python scripts/analyze_hiddenness.py
 ```
+
+The analysis rejects an explicit mismatched `--as-of-date`, query-filtered source without `--allow-query-subset`, and partial snapshots without `--allow-partial`. These opt-ins support exploratory analyses only; they do not establish whole-registry representativeness.
 
 ## Main Outputs
 
