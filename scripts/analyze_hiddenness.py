@@ -459,7 +459,10 @@ def write_findings(
     lines = [
         "# Hiddenness Findings",
         "",
-        f"As of {as_of_date.isoformat()}, the raw registry snapshot contains {metadata.get('records_fetched', total_studies):,} studies.",
+        f"As of {as_of_date.isoformat()} (registry source date), the export contains {metadata.get('records_fetched', total_studies):,} studies.",
+        f"Source scope: {'query-filtered subset (' + str(metadata.get('query_term')) + ')' if metadata.get('query_term') else 'unfiltered registry query'}.",
+        "",
+        "No-results rates use only closed interventional studies with an ACTUAL, day-precise primary completion date, a known non-conflicting posted-results indicator, and the complete one/two-calendar-year interval elapsed as of the source date. These are registry-visible gaps, not legal ACT/FDAAA overdue findings.",
         "",
         "## Snapshot",
         "",
