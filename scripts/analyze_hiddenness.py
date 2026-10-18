@@ -277,6 +277,7 @@ def flatten_study(study: dict[str, Any], as_of_date: date) -> dict[str, Any]:
 
     row = {
         "nct_id": ident.get("nctId", ""),
+        "source_as_of_date": as_of_date.isoformat(),
         "brief_title": ident.get("briefTitle", ""),
         "official_title": ident.get("officialTitle", ""),
         "lead_sponsor_name": lead_sponsor.get("name", "") or "Unknown sponsor",

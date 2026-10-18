@@ -43,6 +43,7 @@ class ReportingGapEligibilityTests(unittest.TestCase):
         self.assertTrue(row["results_gap_1y"])
         self.assertTrue(row["results_gap_2y"])
         self.assertEqual(row["primary_completion_date_precision"], "DAY")
+        self.assertEqual(row["source_as_of_date"], "2026-03-29")
         self.assertEqual(row["days_since_primary_completion"], 730)
 
     def test_month_only_or_year_only_date_does_not_invent_first_of_month(self):
